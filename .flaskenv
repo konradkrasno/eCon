@@ -1,0 +1,2 @@
+FLASK_APP=econ.py
+FLASK_DEBUG=1

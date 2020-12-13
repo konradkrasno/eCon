@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Add new item</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        {{ form.year.label }}<br>
+        {{ form.year(size=20) }}<br>
+        {% for error in form.year.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        {{ form.month.label }}<br>
+        {{ form.month(size=20) }}<br>
+        {% for error in form.month.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        {{ form.done.label }}<br>
+        {{ form.done(size=20) }}<br>
+        {% for error in form.done.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        <p>{{ form.submit() }}</p>
+
+    </form>
+{% endblock %}

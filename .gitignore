@@ -1,0 +1,9 @@
+.idea
+__pycache__/
+*/__pycache__
+*/*/__pycache__
+venv
+migrations
+files
+.env
+todo.txt

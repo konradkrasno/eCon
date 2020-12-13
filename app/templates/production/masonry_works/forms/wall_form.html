@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Add new item</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+
+        {{ form.object.label }}<br>
+        {{ form.object(size=20) }}<br>
+        {% for error in form.object.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        {{ form.level.label }}<br>
+        {{ form.level(size=20) }}<br>
+        {% for error in form.level.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        {{ form.localization.label }}<br>
+        {{ form.localization(size=20) }}<br>
+        {% for error in form.localization.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        {{ form.brick_type.label }}<br>
+        {{ form.brick_type(size=20) }}<br>
+        {% for error in form.brick_type.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        {{ form.wall_width.label }}<br>
+        {{ form.wall_width(size=20) }}<br>
+        {% for error in form.wall_width.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        {{ form.wall_length.label }}<br>
+        {{ form.wall_length(size=20) }}<br>
+        {% for error in form.wall_length.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        {{ form.floor_ord.label }}<br>
+        {{ form.floor_ord(size=20) }}<br>
+        {% for error in form.floor_ord.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        {{ form.ceiling_ord.label }}<br>
+        {{ form.ceiling_ord(size=20) }}<br>
+        {% for error in form.ceiling_ord.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+
+        <p>{{ form.submit() }}</p>
+
+    </form>
+{% endblock %}
