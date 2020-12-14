@@ -83,6 +83,10 @@ class Hole(db.Model):
     def update_item(self, **kwargs):
         pass
 
+    @classmethod
+    def get_all_items(cls, wall_id: int) -> db.Model:
+        return cls.query.filter_by(wall_id=wall_id).order_by(cls.id).all()
+
 
 class Processing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -110,6 +114,10 @@ class Processing(db.Model):
 
     def update_item(self, **kwargs):
         pass
+
+    @classmethod
+    def get_all_items(cls, wall_id: int) -> db.Model:
+        return cls.query.filter_by(wall_id=wall_id).order_by(cls.id).all()
 
 
 class Wall(db.Model):
@@ -146,6 +154,7 @@ class Wall(db.Model):
     @staticmethod
     def get_header() -> List:
         return [
+            "Id",
             "Object",
             "Level",
             "Localization",
@@ -234,7 +243,7 @@ class Wall(db.Model):
     @classmethod
     def get_all_items(cls) -> db.Model:
         # return cls.query.filter_by(investment_id=investment_id)
-        return cls.query.all()
+        return cls.query.order_by(cls.id).all()
 
     def __repr__(self) -> str:
         return "<Wall(id=%s)>" % (self.id,)

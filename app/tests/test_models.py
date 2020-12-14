@@ -55,7 +55,7 @@ class TestModels:
         db.session.remove()
         drop_everything(db.engine)
 
-    def test_masonry_registry(self):
+    def test_add_wall(self):
         kwargs = {
             "object": "K",
             "level": 2,

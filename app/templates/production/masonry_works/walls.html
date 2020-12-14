@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Quantity survey of the masonry works.</h2>
+
+<table style="width:100%">
+  <tr>
+      {% for title in wall_header %}
+      <th>{{ title }}</th>
+      {% endfor %}
+  </tr>
+  {% for item in items %}
+  <tr>
+      <td>{{ item.id }}</td>
+      <td>{{ item.object }}</td>
+      <td>{{ item.level }}</td>
+      <td>{{ item.localization }}</td>
+      <td>{{ item.brick_type }}</td>
+      <td>{{ item.wall_width }}</td>
+      <td>{{ item.wall_length }}</td>
+      <td>{{ item.floor_ord }}</td>
+      <td>{{ item.ceiling_ord }}</td>
+      <td>{{ item.wall_height }}</td>
+      <td>{{ item.gross_wall_area }}</td>
+      <td>{{ item.wall_area_to_survey }}</td>
+      <td>{{ item.wall_area_to_sale }}</td>
+      <td>{{ item.left_to_sale }}</td>
+
+      <td><a href="{{ url_for('masonry_edit_form', wall_id=item.id) }}">Edit wall</a></td>
+      <td><a href="{{ url_for('holes', wall_id=item.id) }}">Holes</a></td>
+      <td><a href="{{ url_for('processing', wall_id=item.id) }}">Processing</a></td>
+      <td><a href="{{ url_for('add_hole', wall_id=item.id) }}">Add hole</a></td>
+      <td><a href="{{ url_for('add_processing', wall_id=item.id) }}">Add processing</a></td>
+  </tr>
+  {% endfor %}
+</table>
+    <div><a href="{{ url_for('add_wall') }}">Add new wall</a></div>
+
+{% endblock %}
