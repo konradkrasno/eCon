@@ -18,24 +18,20 @@
       <th>{{ title }}</th>
       {% endfor %}
 
-      {% for title in masonry_registry_header %}
-      <th>{{ title }}</th>
-      {% endfor %}
-
   </tr>
   {% for item in items %}
   <tr>
-      <td>{{ item.wall.object }}</td>
-      <td>{{ item.wall.level }}</td>
-      <td>{{ item.wall.localization }}</td>
-      <td>{{ item.wall.brick_type }}</td>
-      <td>{{ item.wall.wall_width }}</td>
-      <td>{{ item.wall.wall_length }}</td>
-      <td>{{ item.wall.floor_ord }}</td>
-      <td>{{ item.wall.ceiling_ord }}</td>
-      <td>{{ item.wall.wall_height }}</td>
+      <td>{{ item.object }}</td>
+      <td>{{ item.level }}</td>
+      <td>{{ item.localization }}</td>
+      <td>{{ item.brick_type }}</td>
+      <td>{{ item.wall_width }}</td>
+      <td>{{ item.wall_length }}</td>
+      <td>{{ item.floor_ord }}</td>
+      <td>{{ item.ceiling_ord }}</td>
+      <td>{{ item.wall_height }}</td>
 
-      {% for hole in item.wall.holes %}
+      {% for hole in item.holes %}
       <td>{{ hole.hole_width }}</td>
       <td>{{ hole.hole_height }}</td>
       <td>{{ hole.holes_amount }}</td>
@@ -47,7 +43,7 @@
       <td>{{ item.wall_area_to_survey }}</td>
       <td>{{ item.wall_area_to_sale }}</td>
       <td>{{ item.left_to_sale }}</td>
-      {% for process in item.wall.processing %}
+      {% for process in item.processing %}
       <td>{{ process.year }}</td>
       <td>{{ process.month }}</td>
       <td>{{ process.done }}</td>

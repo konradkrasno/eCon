@@ -2,7 +2,7 @@ import pytest
 
 from app import app, db
 from config import config
-from app.models import User, Investment, Hole, Processing, Wall, MasonryRegistry
+from app.models import User, Investment, Hole, Processing, Wall
 from sqlalchemy.engine import Engine
 
 config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
@@ -69,5 +69,5 @@ class TestModels:
             "hole_height": 2.15,
             "holes_amount": 2,
         }
-        MasonryRegistry.add_wall(**kwargs)
-        assert MasonryRegistry.get_all_items()
+        Wall.add_item(**kwargs)
+        assert Wall.get_all_items()

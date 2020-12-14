@@ -3,7 +3,7 @@ from typing import *
 from flask import render_template, flash, redirect, url_for, g
 from app import app
 from app.forms import LoginForm, WallForm, HoleForm, ProcessingForm
-from app.models import User, Investment, Hole, Processing, Wall, MasonryRegistry
+from app.models import User, Investment, Hole, Processing, Wall
 from app.loading_csv import read_file
 
 
@@ -40,11 +40,10 @@ def production() -> str:
 
 @app.route("/production/masonry_works")
 def masonry_works() -> str:
-    items = MasonryRegistry.get_all_items()
+    items = Wall.get_all_items()
     wall_header = Wall.get_header()
     hole_header = Hole.get_header()
     processing_header = Processing.get_header()
-    masonry_registry_header = MasonryRegistry.get_header()
     return render_template(
         "production/masonry_works/quantity_survey.html",
         title="Production",
@@ -52,7 +51,6 @@ def masonry_works() -> str:
         wall_header=wall_header,
         hole_header=hole_header,
         processing_header=processing_header,
-        masonry_registry_header=masonry_registry_header,
     )
 
 
@@ -60,7 +58,7 @@ def masonry_works() -> str:
 def add_wall() -> str:
     form = WallForm()
     if form.validate_on_submit():
-        MasonryRegistry.add_wall(**form.data)
+        Wall.add_item(**form.data)
         flash("You added a new wall.")
         return redirect(url_for("masonry_works"))
     return render_template(
@@ -72,7 +70,7 @@ def add_wall() -> str:
 def add_hole(_id: int) -> str:
     form = HoleForm()
     if form.validate_on_submit():
-        MasonryRegistry.add_hole(_id, **form.data)
+        Wall.add_hole(_id, **form.data)
         flash("You added a new hole.")
         return redirect(url_for("masonry_works"))
     return render_template(
@@ -84,7 +82,7 @@ def add_hole(_id: int) -> str:
 def add_processing(_id: int) -> str:
     form = ProcessingForm()
     if form.validate_on_submit():
-        MasonryRegistry.add_processing(_id, **form.data)
+        Wall.add_processing(_id, **form.data)
         flash("You added a new processing.")
         return redirect(url_for("masonry_works"))
     return render_template(

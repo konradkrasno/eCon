@@ -38,7 +38,7 @@ class Investment(db.Model):
         backref=db.backref("investment_associate", lazy="dynamic"),
         lazy="dynamic",
     )
-    # masonry_registry = db.relationship("MasonryRegistry", backref="investment", lazy="dynamic")
+    # masonry_registry = db.relationship("Wall", backref="investment", lazy="dynamic")
 
     def __repr__(self) -> str:
         return "<Investment(name=%s)>" % (self.name,)
@@ -124,6 +124,9 @@ class Wall(db.Model):
     ceiling_ord = db.Column(db.Float)
     wall_height = db.Column(db.Float)
     gross_wall_area = db.Column(db.Float)
+    wall_area_to_survey = db.Column(db.Float)
+    wall_area_to_sale = db.Column(db.Float)
+    left_to_sale = db.Column(db.Float)
     holes = db.relationship(
         "Hole",
         backref="wall",
@@ -138,6 +141,7 @@ class Wall(db.Model):
         cascade="all, delete",
         passive_deletes=True,
     )
+    # investment_id = db.Column(db.Integer, db.ForeignKey("investment.id"))
 
     @staticmethod
     def get_header() -> List:
@@ -152,10 +156,13 @@ class Wall(db.Model):
             "Ceiling ordinate",
             "Wall height",
             "Gross wall area",
+            "Wall area to survey",
+            "Wall area to sale",
+            "Left to sale",
         ]
 
     @classmethod
-    def create_item(cls, **kwargs) -> db.Model:
+    def add_item(cls, **kwargs) -> None:
         item = cls(
             object=kwargs["object"],
             level=kwargs["level"],
@@ -167,62 +174,37 @@ class Wall(db.Model):
             ceiling_ord=kwargs["ceiling_ord"],
         )
         item.calculate_rest_attributes()
-        return item
-
-    def update_item(self, **kwargs):
-        pass
+        db.session.add(item)
+        db.session.commit()
 
     def calculate_rest_attributes(self) -> None:
         self.wall_height = self.ceiling_ord - self.floor_ord
         self.gross_wall_area = self.wall_length * self.wall_height
-
-
-class MasonryRegistry(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    wall_id = db.Column(db.Integer, db.ForeignKey("wall.id", ondelete="CASCADE"))
-    wall = db.relationship("Wall")
-    wall_area_to_survey = db.Column(db.Float)
-    wall_area_to_sale = db.Column(db.Float)
-    left_to_sale = db.Column(db.Float)
-    # investment_id = db.Column(db.Integer, db.ForeignKey("investment.id"))
-
-    @staticmethod
-    def get_header() -> List:
-        return [
-            "Id",
-            "Wall area to survey",
-            "Wall area to sale",
-            "Left to sale",
-        ]
-
-    @classmethod
-    def add_wall(cls, **kwargs) -> None:
-        wall = Wall.create_item(**kwargs)
-        item = cls(wall_id=wall.id, wall=wall)
-        item.calculate_areas()
-        item.calculate_left_to_sale()
-        db.session.add(item)
-        db.session.commit()
+        self.calculate_areas()
+        self.calculate_left_to_sale()
 
     def calculate_areas(self) -> None:
-        self.wall_area_to_survey = self.wall.gross_wall_area
-        self.wall_area_to_sale = self.wall.gross_wall_area
-        for hole in self.wall.holes:
+        self.wall_area_to_survey = self.gross_wall_area
+        self.wall_area_to_sale = self.gross_wall_area
+        for hole in self.holes:
             self.wall_area_to_survey -= hole.total_area
             if not hole.below_3m2:
                 self.wall_area_to_sale -= hole.total_area + 1
 
     def calculate_left_to_sale(self):
         self.left_to_sale = 1
-        for item in self.wall.processing:
+        for item in self.processing:
             self.left_to_sale -= item.done
+
+    def update_item(self, **kwargs):
+        pass
 
     @classmethod
     def add_hole(cls, _id: int, **kwargs) -> None:
         hole = Hole.create_item(**kwargs)
         item = cls.query.filter_by(id=_id).first()
         if item:
-            item.wall.holes.append(hole)
+            item.holes.append(hole)
             item.calculate_areas()
             item.calculate_left_to_sale()
             db.session.add(item)
@@ -233,7 +215,7 @@ class MasonryRegistry(db.Model):
         processing = Processing.create_item(**kwargs)
         item = cls.query.filter_by(id=_id).first()
         if item:
-            item.wall.processing.append(processing)
+            item.processing.append(processing)
             item.calculate_areas()
             item.calculate_left_to_sale()
             db.session.add(item)
@@ -255,4 +237,4 @@ class MasonryRegistry(db.Model):
         return cls.query.all()
 
     def __repr__(self) -> str:
-        return "<MasonryRegistry(id=%s)>" % (self.id,)
+        return "<Wall(id=%s)>" % (self.id,)
