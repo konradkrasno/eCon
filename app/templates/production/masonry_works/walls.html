@@ -27,14 +27,14 @@
       <td>{{ item.wall_area_to_sale }}</td>
       <td>{{ item.left_to_sale }}</td>
 
-      <td><a href="{{ url_for('masonry_edit_form', wall_id=item.id) }}">Edit wall</a></td>
-      <td><a href="{{ url_for('holes', wall_id=item.id) }}">Holes</a></td>
-      <td><a href="{{ url_for('processing', wall_id=item.id) }}">Processing</a></td>
-      <td><a href="{{ url_for('add_hole', wall_id=item.id) }}">Add hole</a></td>
-      <td><a href="{{ url_for('add_processing', wall_id=item.id) }}">Add processing</a></td>
+      <td><a href="{{ url_for('masonry_works.masonry_edit_form', wall_id=item.id) }}">Edit wall</a></td>
+      <td><a href="{{ url_for('masonry_works.holes', wall_id=item.id) }}">Holes</a></td>
+      <td><a href="{{ url_for('masonry_works.processing', wall_id=item.id) }}">Processing</a></td>
+      <td><a href="{{ url_for('masonry_works.add_hole', wall_id=item.id) }}">Add hole</a></td>
+      <td><a href="{{ url_for('masonry_works.add_processing', wall_id=item.id) }}">Add processing</a></td>
   </tr>
   {% endfor %}
 </table>
-    <div><a href="{{ url_for('add_wall') }}">Add new wall</a></div>
+    <div><a href="{{ url_for('masonry_works.add_wall') }}">Add new wall</a></div>
 
 {% endblock %}

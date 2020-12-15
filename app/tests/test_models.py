@@ -1,6 +1,6 @@
 import pytest
 
-from app import app, db
+from app import create_app, db
 from config import config
 from app.models import User, Investment, Hole, Processing, Wall
 from sqlalchemy.engine import Engine
@@ -46,14 +46,19 @@ def drop_everything(engine: Engine):
 
 
 class TestModels:
+    app = create_app()
+    app_context = app.app_context()
+
     @classmethod
     def setup_class(cls):
+        cls.app_context.push()
         db.create_all()
 
     @classmethod
     def teardown_class(cls):
         db.session.remove()
         drop_everything(db.engine)
+        cls.app_context.pop()
 
     def test_add_wall(self):
         kwargs = {

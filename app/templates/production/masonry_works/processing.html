@@ -4,7 +4,7 @@
 
 <h2>Quantity survey of the masonry works.</h2>
 
-<div><a href="{{ url_for('walls') }}">Back to walls</a></div>
+<div><a href="{{ url_for('masonry_works.walls') }}">Back to walls</a></div>
 
 <table style="width:100%">
   <tr>
@@ -18,10 +18,14 @@
       <td>{{ item.month }}</td>
       <td>{{ item.done }}</td>
 
-      <td><a href="{{ url_for('masonry_edit_form', wall_id=wall_id) }}">Edit processing</a></td>
+      <td><a href="{{ url_for('masonry_works.masonry_edit_form', wall_id=wall_id) }}">Edit processing</a></td>
   {% endfor %}
   </tr>
 </table>
-<div><a href="{{ url_for('add_processing', wall_id=wall_id, next_page=url_for('processing', wall_id=wall_id)) }}">Add processing</a></div>
+<div>
+    <a href="{{ url_for('masonry_works.add_processing',
+    wall_id=wall_id, next_page=url_for('masonry_works.processing', wall_id=wall_id)) }}">
+    Add processing
+</a></div>
 
 {% endblock %}
