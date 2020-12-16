@@ -27,7 +27,7 @@
       <td>{{ item.wall_area_to_sale }}</td>
       <td>{{ item.left_to_sale }}</td>
 
-      <td><a href="{{ url_for('masonry_works.masonry_edit_form', wall_id=item.id) }}">Edit wall</a></td>
+      <td><a href="{{ url_for('masonry_works.edit_masonry_item', wall_id=item.id) }}">Edit wall</a></td>
       <td><a href="{{ url_for('masonry_works.holes', wall_id=item.id) }}">Holes</a></td>
       <td><a href="{{ url_for('masonry_works.processing', wall_id=item.id) }}">Processing</a></td>
       <td><a href="{{ url_for('masonry_works.add_hole', wall_id=item.id) }}">Add hole</a></td>

@@ -1,5 +1,6 @@
 from typing import *
 
+from fractions import Fraction as frac
 from app import db
 
 investment_associate = db.Table(
@@ -46,11 +47,11 @@ class Investment(db.Model):
 
 class Hole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    width = db.Column(db.Float)
-    height = db.Column(db.Float)
+    width = db.Column(db.String(32))
+    height = db.Column(db.String(32))
     amount = db.Column(db.Integer)
-    area = db.Column(db.Float)
-    total_area = db.Column(db.Float)
+    area = db.Column(db.String(32))
+    total_area = db.Column(db.String(32))
     below_3m2 = db.Column(db.Boolean)
     wall_id = db.Column(db.Integer, db.ForeignKey("wall.id", ondelete="CASCADE"))
 
@@ -76,11 +77,16 @@ class Hole(db.Model):
         return item
 
     def calculate_rest_attributes(self):
-        self.area = self.width * self.height
-        self.total_area = self.area * self.amount
-        self.below_3m2 = True if self.area < 3 else False
+        area = frac(self.width) * frac(self.height)
+        total_area = area * frac(self.amount)
+        self.area = float(area)
+        self.total_area = float(total_area)
+        self.below_3m2 = True if self.area < frac(3) else False
 
     def update_item(self, **kwargs):
+        pass
+
+    def delete_item(self, **kwargs):
         pass
 
     @classmethod
@@ -92,7 +98,7 @@ class Processing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer)
     month = db.Column(db.String(64))
-    done = db.Column(db.Float)
+    done = db.Column(db.String(32))
     wall_id = db.Column(db.Integer, db.ForeignKey("wall.id", ondelete="CASCADE"))
 
     @staticmethod
@@ -115,6 +121,9 @@ class Processing(db.Model):
     def update_item(self, **kwargs):
         pass
 
+    def delete_item(self, **kwargs):
+        pass
+
     @classmethod
     def get_all_items(cls, wall_id: int) -> db.Model:
         return cls.query.filter_by(wall_id=wall_id).order_by(cls.id).all()
@@ -127,14 +136,14 @@ class Wall(db.Model):
     localization = db.Column(db.String(128))
     brick_type = db.Column(db.String(64))
     wall_width = db.Column(db.Integer)
-    wall_length = db.Column(db.Float)
-    floor_ord = db.Column(db.Float)
-    ceiling_ord = db.Column(db.Float)
-    wall_height = db.Column(db.Float)
-    gross_wall_area = db.Column(db.Float)
-    wall_area_to_survey = db.Column(db.Float)
-    wall_area_to_sale = db.Column(db.Float)
-    left_to_sale = db.Column(db.Float)
+    wall_length = db.Column(db.String(32))
+    floor_ord = db.Column(db.String(32))
+    ceiling_ord = db.Column(db.String(32))
+    wall_height = db.Column(db.String(32))
+    gross_wall_area = db.Column(db.String(32))
+    wall_area_to_survey = db.Column(db.String(32))
+    wall_area_to_sale = db.Column(db.String(32))
+    left_to_sale = db.Column(db.String(32))
     holes = db.relationship(
         "Hole",
         backref="wall",
@@ -187,25 +196,36 @@ class Wall(db.Model):
         db.session.commit()
 
     def calculate_rest_attributes(self) -> None:
-        self.wall_height = self.ceiling_ord - self.floor_ord
-        self.gross_wall_area = self.wall_length * self.wall_height
+        wall_height = frac(self.ceiling_ord) - frac(self.floor_ord)
+        gross_wall_area = frac(self.wall_length) * wall_height
+        self.wall_height = float(wall_height)
+        self.gross_wall_area = float(gross_wall_area)
         self.calculate_areas()
         self.calculate_left_to_sale()
 
     def calculate_areas(self) -> None:
-        self.wall_area_to_survey = self.gross_wall_area
-        self.wall_area_to_sale = self.gross_wall_area
+        wall_area_to_survey = frac(self.gross_wall_area)
+        wall_area_to_sale = frac(self.gross_wall_area)
         for hole in self.holes:
-            self.wall_area_to_survey -= hole.total_area
+            wall_area_to_survey -= frac(hole.total_area)
             if not hole.below_3m2:
-                self.wall_area_to_sale -= hole.total_area + 1
+                wall_area_to_sale -= frac(hole.total_area) - frac(1)
+        self.wall_area_to_survey = float(wall_area_to_survey)
+        self.wall_area_to_sale = float(wall_area_to_sale)
 
     def calculate_left_to_sale(self):
-        self.left_to_sale = 1
+        left_to_sale = frac(1)
         for item in self.processing:
-            self.left_to_sale -= item.done
+            left_to_sale -= frac(item.done)
+        if left_to_sale >= 0:
+            self.left_to_sale = float(left_to_sale)
+        else:
+            self.left_to_sale = 0
 
     def update_item(self, **kwargs):
+        pass
+
+    def delete_item(self, **kwargs):
         pass
 
     @classmethod

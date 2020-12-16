@@ -88,6 +88,6 @@ def add_processing(wall_id: int) -> str:
     )
 
 
-@bp.route("/production/masonry_edit_form/<int:wall_id>", methods=["GET", "POST"])
-def masonry_edit_form(wall_id: int) -> str:
+@bp.route("/production/edit_masonry_item/<int:wall_id>", methods=["GET", "POST"])
+def edit_masonry_item(wall_id: int) -> str:
     return render_template("in_preparation.html")

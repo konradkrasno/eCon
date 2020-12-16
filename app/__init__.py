@@ -13,8 +13,10 @@ def create_app(app_config=config):
     db.init_app(app)
     migrate.init_app(app, db)
     from app.production.masonry_works import bp as masonry_works_bp
+
     app.register_blueprint(masonry_works_bp)
     from app.main import bp as main_bp
+
     app.register_blueprint(main_bp)
     return app
 

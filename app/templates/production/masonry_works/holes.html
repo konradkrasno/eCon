@@ -21,7 +21,7 @@
       <td>{{ item.total_area }}</td>
       <td>{{ item.below_3m2 }}</td>
 
-      <td><a href="{{ url_for('masonry_works.masonry_edit_form', wall_id=wall_id) }}">Edit hole</a></td>
+      <td><a href="{{ url_for('masonry_works.edit_masonry_item', wall_id=wall_id) }}">Edit hole</a></td>
     {% endfor %}
   </tr>
 </table>
