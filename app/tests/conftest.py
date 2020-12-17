@@ -78,4 +78,4 @@ def wall_data() -> Dict:
 
 @pytest.fixture
 def add_wall(app, wall_data):
-    Wall.add_item(**wall_data)
+    Wall.add_wall(**wall_data)

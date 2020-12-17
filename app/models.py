@@ -66,31 +66,15 @@ class Hole(db.Model):
             "Hole below 3 square metres",
         ]
 
-    @classmethod
-    def create_item(cls, **kwargs) -> db.Model:
-        item = cls(
-            width=kwargs["hole_width"],
-            height=kwargs["hole_height"],
-            amount=kwargs["holes_amount"],
-        )
-        item.calculate_rest_attributes()
-        return item
-
-    def calculate_rest_attributes(self):
+    def calculate_rest_attributes(self) -> None:
         area = frac(self.width) * frac(self.height)
         total_area = area * frac(self.amount)
         self.area = float(area)
         self.total_area = float(total_area)
         self.below_3m2 = True if self.area < frac(3) else False
 
-    def update_item(self, **kwargs):
-        pass
-
-    def delete_item(self, **kwargs):
-        pass
-
     @classmethod
-    def get_all_items(cls, wall_id: int) -> db.Model:
+    def get_items_by_wall_id(cls, wall_id: int) -> db.Model:
         return cls.query.filter_by(wall_id=wall_id).order_by(cls.id).all()
 
 
@@ -109,23 +93,11 @@ class Processing(db.Model):
             "Done",
         ]
 
-    @classmethod
-    def create_item(cls, **kwargs) -> db.Model:
-        item = cls(
-            year=kwargs["year"],
-            month=kwargs["month"],
-            done=kwargs["done"],
-        )
-        return item
-
-    def update_item(self, **kwargs):
-        pass
-
-    def delete_item(self, **kwargs):
+    def calculate_rest_attributes(self) -> None:
         pass
 
     @classmethod
-    def get_all_items(cls, wall_id: int) -> db.Model:
+    def get_items_by_wall_id(cls, wall_id: int) -> db.Model:
         return cls.query.filter_by(wall_id=wall_id).order_by(cls.id).all()
 
 
@@ -180,20 +152,96 @@ class Wall(db.Model):
         ]
 
     @classmethod
-    def add_item(cls, **kwargs) -> None:
-        item = cls(
-            object=kwargs["object"],
-            level=kwargs["level"],
-            localization=kwargs["localization"],
-            brick_type=kwargs["brick_type"],
-            wall_width=kwargs["wall_width"],
-            wall_length=kwargs["wall_length"],
-            floor_ord=kwargs["floor_ord"],
-            ceiling_ord=kwargs["ceiling_ord"],
-        )
-        item.calculate_rest_attributes()
+    def add_wall(cls, **kwargs) -> None:
+        item = cls.create_item(cls, **kwargs)
         db.session.add(item)
         db.session.commit()
+
+    @classmethod
+    def add_hole(cls, wall_id: int, **kwargs) -> None:
+        hole = cls.create_item(Hole, **kwargs)
+        wall = cls.query.filter_by(id=wall_id).first()
+        if wall:
+            wall.holes.append(hole)
+            wall.calculate_areas()
+            wall.calculate_left_to_sale()
+            db.session.add(wall)
+            db.session.commit()
+
+    @classmethod
+    def add_processing(cls, wall_id: int, **kwargs) -> None:
+        processing = cls.create_item(Processing, **kwargs)
+        wall = cls.query.filter_by(id=wall_id).first()
+        if wall:
+            wall.processing.append(processing)
+            wall.calculate_areas()
+            wall.calculate_left_to_sale()
+            db.session.add(wall)
+            db.session.commit()
+
+    @classmethod
+    def edit_wall(cls, wall_id: int, **kwargs) -> None:
+        wall = cls.query.filter_by(id=wall_id).first()
+        if wall:
+            cls.update_item(wall, **kwargs)
+            db.session.add(wall)
+            db.session.commit()
+
+    @classmethod
+    def edit_hole(cls, model_id: int, **kwargs) -> None:
+        wall = (
+            cls.query.join(Hole, Hole.wall_id == cls.id)
+            .filter(Hole.id == model_id)
+            .first()
+        )
+        if wall:
+            cls.update_item(wall.holes[0], **kwargs)
+            wall.calculate_areas()
+            wall.calculate_left_to_sale()
+            db.session.add(wall)
+            db.session.commit()
+
+    @classmethod
+    def edit_processing(cls, model_id: int, **kwargs) -> None:
+        wall = (
+            cls.query.join(Processing, Processing.wall_id == cls.id)
+            .filter(Processing.id == model_id)
+            .first()
+        )
+        if wall:
+            cls.update_item(wall.processing[0], **kwargs)
+            wall.calculate_areas()
+            wall.calculate_left_to_sale()
+            db.session.add(wall)
+            db.session.commit()
+
+    @classmethod
+    def delete_wall(cls, wall_id: int, **kwargs) -> None:
+        # TODO finish
+        pass
+
+    @classmethod
+    def delete_hole(cls, wall_id: int, model_id: int, **kwargs) -> None:
+        # TODO finish
+        pass
+
+    @classmethod
+    def delete_processing(cls, wall_id: int, model_id: int, **kwargs) -> None:
+        # TODO finish
+        pass
+
+    @classmethod
+    def create_item(cls, model: db.Model, **kwargs) -> db.Model:
+        item = model()
+        cls.update_item(item, **kwargs)
+        return item
+
+    @staticmethod
+    def update_item(item: db.Model, **kwargs) -> db.Model:
+        for attr, val in kwargs.items():
+            item.__setattr__(attr, val)
+        item.calculate_rest_attributes()
+        return item
 
     def calculate_rest_attributes(self) -> None:
         wall_height = frac(self.ceiling_ord) - frac(self.floor_ord)
@@ -221,44 +269,6 @@ class Wall(db.Model):
             self.left_to_sale = float(left_to_sale)
         else:
             self.left_to_sale = 0
-
-    def update_item(self, **kwargs):
-        pass
-
-    def delete_item(self, **kwargs):
-        pass
-
-    @classmethod
-    def add_hole(cls, _id: int, **kwargs) -> None:
-        hole = Hole.create_item(**kwargs)
-        item = cls.query.filter_by(id=_id).first()
-        if item:
-            item.holes.append(hole)
-            item.calculate_areas()
-            item.calculate_left_to_sale()
-            db.session.add(item)
-            db.session.commit()
-
-    @classmethod
-    def add_processing(cls, _id: int, **kwargs) -> None:
-        processing = Processing.create_item(**kwargs)
-        item = cls.query.filter_by(id=_id).first()
-        if item:
-            item.processing.append(processing)
-            item.calculate_areas()
-            item.calculate_left_to_sale()
-            db.session.add(item)
-            db.session.commit()
-
-    @classmethod
-    def edit_model(cls, _id: int, model: str, **kwargs) -> None:
-        item = cls.query.filter_by(id=_id).first()
-        if item:
-            item.__getattribute__(item, model).update_item(**kwargs)
-            item.calculate_areas()
-            item.calculate_left_to_sale()
-            db.session.add(item)
-            db.session.commit()
 
     @classmethod
     def get_all_items(cls) -> db.Model:

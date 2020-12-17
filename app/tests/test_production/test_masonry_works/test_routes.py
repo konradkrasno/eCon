@@ -23,7 +23,7 @@ def test_holes(client, captured_templates):
     template, context = captured_templates[0]
     assert template.name == "production/masonry_works/holes.html"
     assert context["title"] == "Holes"
-    assert context["items"] == Hole.get_all_items(1)
+    assert context["items"] == Hole.get_items_by_wall_id(1)
     assert context["hole_header"] == Hole.get_header()
 
 
@@ -34,12 +34,14 @@ def test_processing(client, captured_templates):
     template, context = captured_templates[0]
     assert template.name == "production/masonry_works/processing.html"
     assert context["title"] == "Processing"
-    assert context["items"] == Processing.get_all_items(1)
+    assert context["items"] == Processing.get_items_by_wall_id(1)
     assert context["processing_header"] == Processing.get_header()
 
 
 def test_add_wall(client, captured_templates, wall_data):
-    response = client.post("/production/add_wall", data=wall_data, follow_redirects=True)
+    response = client.post(
+        "/production/add_wall", data=wall_data, follow_redirects=True
+    )
     assert response.status_code == 200
     assert len(captured_templates) == 1
     template, context = captured_templates[0]

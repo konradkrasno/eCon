@@ -20,7 +20,7 @@ def walls() -> str:
 
 @bp.route("/production/holes/<int:wall_id>")
 def holes(wall_id: int) -> str:
-    items = Hole.get_all_items(wall_id)
+    items = Hole.get_items_by_wall_id(wall_id)
     hole_header = Hole.get_header()
     return render_template(
         "production/masonry_works/holes.html",
@@ -33,7 +33,7 @@ def holes(wall_id: int) -> str:
 
 @bp.route("/production/processing/<int:wall_id>")
 def processing(wall_id: int) -> str:
-    items = Processing.get_all_items(wall_id)
+    items = Processing.get_items_by_wall_id(wall_id)
     processing_header = Processing.get_header()
     return render_template(
         "production/masonry_works/processing.html",
@@ -48,7 +48,7 @@ def processing(wall_id: int) -> str:
 def add_wall() -> str:
     form = WallForm()
     if form.validate_on_submit():
-        Wall.add_item(**form.data)
+        Wall.add_wall(**form.data)
         flash("You added a new wall.")
         return redirect(url_for("masonry_works.walls"))
     return render_template(

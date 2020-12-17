@@ -21,9 +21,9 @@ class WallForm(FlaskForm):
 
 
 class HoleForm(FlaskForm):
-    hole_width = FloatField("hole width", validators=[InputRequired()])
-    hole_height = FloatField("hole height", validators=[InputRequired()])
-    holes_amount = IntegerField("holes amount", validators=[InputRequired()])
+    width = FloatField("hole width", validators=[InputRequired()])
+    height = FloatField("hole height", validators=[InputRequired()])
+    amount = IntegerField("holes amount", validators=[InputRequired()])
     submit = SubmitField("submit")
 
 
