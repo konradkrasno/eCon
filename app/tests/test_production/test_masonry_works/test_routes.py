@@ -47,7 +47,7 @@ def test_add_wall(client, captured_templates, wall_data):
     template, context = captured_templates[0]
     assert template.name == "production/masonry_works/forms/wall_form.html"
     assert context["title"] == "Wall Form"
-    assert context["form"].object.data == "G"
+    assert context["form"].sector.data == "G"
     assert context["form"].level.data == "2"
     # assert context["form"].validate_on_submit()
     # assert_flashes(client, "You added a new wall.")

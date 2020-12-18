@@ -20,7 +20,7 @@ def assert_flashes(client, expected_message, expected_category="message"):
 
 
 @contextmanager
-def handle_db():
+def temp_db():
     db.create_all()
     try:
         yield db
@@ -30,42 +30,42 @@ def handle_db():
 
 
 @pytest.fixture
-def app():
+def app_and_db():
     config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
     config["TESTING"] = True
     app = create_app(config)
     ctx = app.test_request_context()
     ctx.push()
     with app.app_context():
-        with handle_db():
-            yield app
+        with temp_db() as test_db:
+            yield app, test_db
     ctx.pop()
 
 
 @pytest.fixture
-def client(app):
-    with app.test_client() as client:
+def client(app_and_db):
+    with app_and_db[0].test_client() as client:
         yield client
 
 
 @pytest.fixture
-def captured_templates(app):
+def captured_templates(app_and_db):
     recorded = []
 
     def record(sender, template, context, **extra):
         recorded.append((template, context))
 
-    template_rendered.connect(record, app)
+    template_rendered.connect(record, app_and_db[0])
     try:
         yield recorded
     finally:
-        template_rendered.disconnect(record, app)
+        template_rendered.disconnect(record, app_and_db[0])
 
 
 @pytest.fixture
 def wall_data() -> Dict:
     return {
-        "object": "G",
+        "sector": "G",
         "level": 2,
         "localization": "O/5",
         "brick_type": "YTONG",
@@ -77,5 +77,5 @@ def wall_data() -> Dict:
 
 
 @pytest.fixture
-def add_wall(app, wall_data):
+def add_wall(app_and_db, wall_data):
     Wall.add_wall(**wall_data)

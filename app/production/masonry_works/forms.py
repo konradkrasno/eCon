@@ -9,7 +9,7 @@ from wtforms.validators import DataRequired, InputRequired
 
 
 class WallForm(FlaskForm):
-    object = StringField("object", validators=[DataRequired()])
+    sector = StringField("sector", validators=[DataRequired()])
     level = StringField("level", validators=[DataRequired()])
     localization = StringField("localization")
     brick_type = StringField("brick_type", validators=[DataRequired()])
@@ -21,9 +21,9 @@ class WallForm(FlaskForm):
 
 
 class HoleForm(FlaskForm):
-    width = FloatField("hole width", validators=[InputRequired()])
-    height = FloatField("hole height", validators=[InputRequired()])
-    amount = IntegerField("holes amount", validators=[InputRequired()])
+    width = FloatField("width", validators=[InputRequired()])
+    height = FloatField("height", validators=[InputRequired()])
+    amount = IntegerField("amount", validators=[InputRequired()])
     submit = SubmitField("submit")
 
 

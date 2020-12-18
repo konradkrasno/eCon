@@ -13,7 +13,7 @@
   {% for item in items %}
   <tr>
       <td>{{ item.id }}</td>
-      <td>{{ item.object }}</td>
+      <td>{{ item.sector }}</td>
       <td>{{ item.level }}</td>
       <td>{{ item.localization }}</td>
       <td>{{ item.brick_type }}</td>
@@ -31,7 +31,9 @@
       <td><a href="{{ url_for('masonry_works.holes', wall_id=item.id) }}">Holes</a></td>
       <td><a href="{{ url_for('masonry_works.processing', wall_id=item.id) }}">Processing</a></td>
       <td><a href="{{ url_for('masonry_works.add_hole', wall_id=item.id) }}">Add hole</a></td>
+      {% if item.left_to_sale %}
       <td><a href="{{ url_for('masonry_works.add_processing', wall_id=item.id) }}">Add processing</a></td>
+      {% endif %}
   </tr>
   {% endfor %}
 </table>

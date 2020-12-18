@@ -3,7 +3,6 @@
 {% block content %}
 
 <h2>Quantity survey of the masonry works.</h2>
-
 <div><a href="{{ url_for('masonry_works.walls') }}">Back to walls</a></div>
 
 <table style="width:100%">
@@ -12,7 +11,7 @@
       <th>{{ title }}</th>
       {% endfor %}
   </tr>
-  {% for item in items %}
+    {% for item in items %}
   <tr>
       <td>{{ item.year }}</td>
       <td>{{ item.month }}</td>
@@ -22,10 +21,12 @@
   {% endfor %}
   </tr>
 </table>
+{% if left_to_sale %}
 <div>
     <a href="{{ url_for('masonry_works.add_processing',
     wall_id=wall_id, next_page=url_for('masonry_works.processing', wall_id=wall_id)) }}">
     Add processing
 </a></div>
+{% endif %}
 
 {% endblock %}

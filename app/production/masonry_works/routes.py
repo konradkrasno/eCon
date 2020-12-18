@@ -34,6 +34,7 @@ def holes(wall_id: int) -> str:
 @bp.route("/production/processing/<int:wall_id>")
 def processing(wall_id: int) -> str:
     items = Processing.get_items_by_wall_id(wall_id)
+    left_to_sale = Wall.get_left_to_sale(wall_id)
     processing_header = Processing.get_header()
     return render_template(
         "production/masonry_works/processing.html",
@@ -41,6 +42,7 @@ def processing(wall_id: int) -> str:
         items=items,
         processing_header=processing_header,
         wall_id=wall_id,
+        left_to_sale=left_to_sale,
     )
 
 
@@ -75,12 +77,16 @@ def add_hole(wall_id: int) -> str:
 def add_processing(wall_id: int) -> str:
     form = ProcessingForm()
     if form.validate_on_submit():
-        Wall.add_processing(wall_id, **form.data)
-        flash("You added a new processing.")
-        next_page = request.args.get("next_page")
-        if not next_page:
-            next_page = url_for("masonry_works.walls")
-        return redirect(next_page)
+        try:
+            Wall.add_processing(wall_id, **form.data)
+        except ValueError as e:
+            form.done.errors.append(e)
+        else:
+            flash("You added a new processing.")
+            next_page = request.args.get("next_page")
+            if not next_page:
+                next_page = url_for("masonry_works.walls")
+            return redirect(next_page)
     return render_template(
         "production/masonry_works/forms/processing_form.html",
         title="Processing Form",
