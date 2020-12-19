@@ -235,18 +235,18 @@ class Wall(db.Model):
     def add_processing(cls, wall_id: int, **kwargs) -> None:
         wall = cls.query.filter_by(id=wall_id).first()
         if wall:
-            kwargs = cls.check_done_attr_while_adding(wall, kwargs)
+            kwargs = cls.validate_done_attr_while_adding(wall, kwargs)
             processing = cls.create_item(Processing, **kwargs)
             wall.processing.append(processing)
             db.session.add(wall)
             db.session.commit()
 
     @staticmethod
-    def check_done_attr_while_adding(wall: db.Model, data: Dict) -> Dict:
+    def validate_done_attr_while_adding(wall: db.Model, data: Dict) -> Dict:
         done = data.get("done")
         if done:
             if float(done) > 1:
-                raise ValueError("Value: done cannot be less then 1!")
+                raise ValueError("Value: done cannot be greater then 1!")
             if float(wall.left_to_sale) < float(done):
                 data["done"] = str(wall.left_to_sale)
         return data
@@ -275,21 +275,27 @@ class Wall(db.Model):
 
     @classmethod
     def edit_processing(cls, model_id: int, **kwargs) -> None:
-        wall = cls.query.join(Processing, Processing.wall_id == cls.id).first()
+        wall = (
+            cls.query.join(Processing, Processing.wall_id == cls.id)
+            .filter(Processing.id == model_id)
+            .first()
+        )
         if wall:
             processing = wall.processing.filter_by(id=model_id).first()
             if processing:
-                kwargs = cls.check_done_attr_while_editing(wall, processing, kwargs)
+                kwargs = cls.validate_done_attr_while_editing(wall, processing, kwargs)
                 cls.update_item(processing, **kwargs)
                 db.session.add(wall)
                 db.session.commit()
 
     @staticmethod
-    def check_done_attr_while_editing(wall: db.Model, processing: db.Model, data: Dict) -> Dict:
+    def validate_done_attr_while_editing(
+        wall: db.Model, processing: db.Model, data: Dict
+    ) -> Dict:
         done = data.get("done")
         if done:
             if float(done) > 1:
-                raise ValueError("Value: done cannot be less then 1!")
+                raise ValueError("Value: done cannot be greater then 1!")
             left_to_sale = frac(str(wall.left_to_sale))
             left_to_sale += frac(str(processing.done))
             if float(left_to_sale) < float(done):
@@ -297,19 +303,22 @@ class Wall(db.Model):
         return data
 
     @classmethod
-    def delete_wall(cls, wall_id: int, **kwargs) -> None:
-        # TODO finish
-        pass
+    def delete_wall(cls, wall_id: int) -> None:
+        wall = Wall.query.filter_by(id=wall_id).first()
+        db.session.delete(wall)
+        db.session.commit()
 
     @classmethod
-    def delete_hole(cls, wall_id: int, model_id: int, **kwargs) -> None:
-        # TODO finish
-        pass
+    def delete_hole(cls, model_id: int) -> None:
+        hole = Hole.query.filter_by(id=model_id).first()
+        db.session.delete(hole)
+        db.session.commit()
 
     @classmethod
-    def delete_processing(cls, wall_id: int, model_id: int, **kwargs) -> None:
-        # TODO finish
-        pass
+    def delete_processing(cls, model_id: int) -> None:
+        processing = Processing.query.filter_by(id=model_id).first()
+        db.session.delete(processing)
+        db.session.commit()
 
     @classmethod
     def create_item(cls, model: db.Model, **kwargs) -> db.Model:

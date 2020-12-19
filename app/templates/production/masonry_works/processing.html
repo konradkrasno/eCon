@@ -16,8 +16,12 @@
       <td>{{ item.year }}</td>
       <td>{{ item.month }}</td>
       <td>{{ item.done }}</td>
-
-      <td><a href="{{ url_for('masonry_works.edit_masonry_item', wall_id=wall_id) }}">Edit processing</a></td>
+      <td>
+      <a href="{{ url_for('masonry_works.edit_processing', wall_id=wall_id, proc_id=item.id) }}">Edit processing</a>
+      </td>
+      <td>
+      <a href="{{ url_for('masonry_works.delete_processing', wall_id=wall_id, proc_id=item.id) }}">Delete processing</a>
+      </td>
   {% endfor %}
   </tr>
 </table>

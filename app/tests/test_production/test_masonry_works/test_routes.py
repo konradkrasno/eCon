@@ -46,7 +46,7 @@ def test_add_wall(client, captured_templates, wall_data):
     assert len(captured_templates) == 1
     template, context = captured_templates[0]
     assert template.name == "production/masonry_works/forms/wall_form.html"
-    assert context["title"] == "Wall Form"
+    assert context["title"] == "Add Wall"
     assert context["form"].sector.data == "G"
     assert context["form"].level.data == "2"
     # assert context["form"].validate_on_submit()
@@ -70,7 +70,7 @@ def test_add_processing(client, captured_templates):
     assert len(captured_templates) == 1
     template, context = captured_templates[0]
     assert template.name == "production/masonry_works/forms/processing_form.html"
-    assert context["title"] == "Processing Form"
+    assert context["title"] == "Add Processing"
     assert context["form"].year.data == 2020
     assert context["form"].month.data == "September"
     assert context["form"].done.data == 0.5
@@ -78,11 +78,17 @@ def test_add_processing(client, captured_templates):
     # assert_flashes(client, "You added a new processing.")
 
 
-def test_edit_masonry_item(client):
-    # TODO finish updating items
+def test_edit_wall(client, captured_templates, add_wall):
+    response = client.post(
+        "/production/edit_wall/1", data={"level": 5}, follow_redirects=True
+    )
+    assert response.status_code == 200
+    # TODO finish
+
+
+def test_edit_hole():
     pass
 
 
-def test_delete_masonry_item(client):
-    # TODO add deleting items
+def test_edit_processing():
     pass

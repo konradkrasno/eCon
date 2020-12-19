@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Are you sure you want to delete the item?</h2>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>{{ form.no(size=20) }}</p>
+        <p>{{ form.yes(size=20) }}</p>
+    </form>
+{% endblock %}

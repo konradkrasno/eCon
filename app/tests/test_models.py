@@ -157,9 +157,9 @@ def test_update_processing(add_wall):
     assert wall.processing[0].done == "0.3"
     assert wall.left_to_sale == 0.7
     processing = wall.processing[0]
-    Wall.edit_processing(processing.id, month="November", done=0.6)
-    assert wall.processing[0].year == 2020
-    assert wall.processing[0].month == "November"
+    Wall.edit_processing(processing.id, year=2021, month="January", done=0.6)
+    assert wall.processing[0].year == 2021
+    assert wall.processing[0].month == "January"
     assert wall.processing[0].done == "0.6"
     assert wall.left_to_sale == 0.4
 
@@ -183,3 +183,25 @@ def test_update_processing_when_done_above_1(add_wall):
     processing = wall.processing[-1]
     with pytest.raises(ValueError):
         Wall.edit_processing(processing.id, done=1.35)
+
+
+def test_delete_wall(add_wall):
+    Wall.add_hole(wall_id=1, width=1, height=2, amonunt=1)
+    Wall.add_processing(wall_id=1, year=2020, month="December", done=0.5)
+    assert Wall.query.filter_by(id=1).first()
+    Wall.delete_wall(1)
+    assert not Wall.query.filter_by(id=1).first()
+
+
+def test_delete_hole(add_wall):
+    Wall.add_hole(wall_id=1, width=1, height=2, amonunt=1)
+    assert Hole.query.filter_by(id=1).first()
+    Wall.delete_hole(1)
+    assert not Hole.query.filter_by(id=1).first()
+
+
+def test_delete_processing(add_wall):
+    Wall.add_processing(wall_id=1, year=2020, month="December", done=0.5)
+    assert Processing.query.filter_by(id=1).first()
+    Wall.delete_processing(1)
+    assert not Processing.query.filter_by(id=1).first()
