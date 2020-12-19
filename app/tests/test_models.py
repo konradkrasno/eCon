@@ -193,6 +193,11 @@ def test_delete_wall(add_wall):
     assert not Wall.query.filter_by(id=1).first()
 
 
+def test_delete_wall_when_no_wall(app_and_db):
+    assert not Wall.query.filter_by(id=1).first()
+    Wall.delete_wall(1)
+
+
 def test_delete_hole(add_wall):
     Wall.add_hole(wall_id=1, width=1, height=2, amonunt=1)
     assert Hole.query.filter_by(id=1).first()
@@ -200,8 +205,76 @@ def test_delete_hole(add_wall):
     assert not Hole.query.filter_by(id=1).first()
 
 
+def test_delete_hole_when_no_hole(app_and_db):
+    assert not Hole.query.filter_by(id=1).first()
+    Wall.delete_hole(1)
+
+
 def test_delete_processing(add_wall):
     Wall.add_processing(wall_id=1, year=2020, month="December", done=0.5)
     assert Processing.query.filter_by(id=1).first()
     Wall.delete_processing(1)
     assert not Processing.query.filter_by(id=1).first()
+
+
+def test_delete_processing_when_no_processing(app_and_db):
+    assert not Processing.query.filter_by(id=1).first()
+    Wall.delete_processing(1)
+
+
+def test_upload_walls(app_and_db):
+    messages = Wall.upload_walls("test/walls.csv")
+    assert len(Wall.query.all()) == 17
+    assert len(messages) == 1
+    assert messages[0] == "Uploaded 17 items."
+
+
+def test_upload_walls_when_wrong_file(app_and_db):
+    messages = Wall.upload_walls("test/holes.csv")
+    assert len(Wall.query.all()) == 0
+    assert len(messages) == 2
+    assert messages[0] == "Uploaded 0 items."
+
+
+def test_upload_walls_with_duplicates(app_and_db):
+    messages = Wall.upload_walls("test/walls2.csv")
+    assert len(Wall.query.all()) == 10
+    assert len(messages) == 1
+    assert messages[0] == "Uploaded 10 items."
+
+    messages = Wall.upload_walls("test/walls.csv")
+    assert len(Wall.query.all()) == 17
+    assert len(messages) == 2
+    assert messages[0] == "Uploaded 7 items."
+    assert (
+        messages[1]
+        == "Items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] not added because they are duplicated or has the wrong format."
+    )
+
+
+def test_upload_holes(app_and_db):
+    Wall.upload_walls("test/walls.csv")
+    messages = Wall.upload_holes("test/holes.csv")
+    assert len(Hole.query.all()) == 17
+    assert len(messages) == 1
+    assert messages[0] == "Uploaded 17 items."
+
+
+def test_upload_holes_without_walls(app_and_db):
+    Wall.upload_walls("test/walls2.csv")
+    messages = Wall.upload_holes("test/holes.csv")
+    assert len(Hole.query.all()) == 10
+    assert len(messages) == 2
+    assert messages[0] == "Uploaded 10 items."
+    assert (
+        messages[1]
+        == "Items: [11, 12, 13, 14, 15, 16, 17] not added because wall with specified id does not exist. Add wall first."
+    )
+
+
+def test_upload_hole_with_wrong_file(app_and_db):
+    pass
+
+
+def test_upload_hole_with_duplicates(app_and_db):
+    pass

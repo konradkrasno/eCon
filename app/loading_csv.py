@@ -1,19 +1,24 @@
 from typing import *
 
-import os
+import os, glob
 import pandas as pd
 
-from config import BASE_DIR
+from config import BASE_DIR, config
 
 
-def get_file_path(file_dir: str) -> os.path:
-    return os.path.join(BASE_DIR, file_dir)
+def read_csv_file(filename: str) -> List:
+    file_path = os.path.join(BASE_DIR, config["UPLOAD_FOLDER"], filename)
+    return pd.read_csv(file_path, sep=";").to_dict(orient="records")
 
 
-def read_file(file_dir: str) -> List:
-    return pd.read_csv(get_file_path(file_dir), sep=";").to_dict(orient="records")
-
-
-def read_files(files: List) -> Iterator:
+def read_csv_files(files_dir: str = "") -> Iterator:
+    files_dir = os.path.join(BASE_DIR, config["UPLOAD_FOLDER"], files_dir)
+    files_path = files_dir + "*.csv"
+    files = glob.glob(files_path)
     for file in files:
-        yield pd.read_csv(get_file_path(file), sep=";").to_dict(orient="records")
+        yield pd.read_csv(file, sep=";").to_dict(orient="records")
+
+
+def remove_file(filename: str):
+    file_path = os.path.join(BASE_DIR, config["UPLOAD_FOLDER"], filename)
+    os.remove(file_path)

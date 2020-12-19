@@ -3,6 +3,7 @@ from typing import *
 from sqlalchemy.ext.hybrid import hybrid_property
 from fractions import Fraction as frac
 from app import db
+from app.loading_csv import read_csv_file
 
 investment_associate = db.Table(
     "investment_associate",
@@ -48,8 +49,8 @@ class Investment(db.Model):
 
 class Hole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    width = db.Column(db.String(32))
-    height = db.Column(db.String(32))
+    width = db.Column(db.Float)
+    height = db.Column(db.Float)
     amount = db.Column(db.Integer)
     wall_id = db.Column(db.Integer, db.ForeignKey("wall.id", ondelete="CASCADE"))
 
@@ -66,11 +67,11 @@ class Hole(db.Model):
         return self.__compute_below_3m2()
 
     def __compute_area(self) -> frac:
-        return frac(self.width) * frac(self.height)
+        return frac(str(self.width)) * frac(str(self.height))
 
     def __compute_total_area(self) -> frac:
         area = self.__compute_area()
-        return area * frac(self.amount)
+        return area * frac(str(self.amount))
 
     def __compute_below_3m2(self) -> bool:
         return True if self.area < 3 else False
@@ -95,12 +96,12 @@ class Processing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer)
     month = db.Column(db.String(64))
-    _done = db.Column(db.String(32))
+    _done = db.Column(db.Float)
     wall_id = db.Column(db.Integer, db.ForeignKey("wall.id", ondelete="CASCADE"))
 
     @hybrid_property
     def done(self):
-        return str(self._done)
+        return self._done
 
     @done.setter
     def done(self, value):
@@ -108,7 +109,7 @@ class Processing(db.Model):
             raise ValueError("Value: done cannot be less then 1!")
         if frac(str(value)) > frac("1"):
             raise ValueError("Value: done cannot be greater then 1!")
-        self._done = str(value)
+        self._done = value
 
     @staticmethod
     def get_header() -> List:
@@ -130,9 +131,9 @@ class Wall(db.Model):
     localization = db.Column(db.String(128))
     brick_type = db.Column(db.String(64))
     wall_width = db.Column(db.Integer)
-    wall_length = db.Column(db.String(32))
-    floor_ord = db.Column(db.String(32))
-    ceiling_ord = db.Column(db.String(32))
+    wall_length = db.Column(db.Float)
+    floor_ord = db.Column(db.Float)
+    ceiling_ord = db.Column(db.Float)
     holes = db.relationship(
         "Hole",
         backref="wall",
@@ -170,11 +171,11 @@ class Wall(db.Model):
         return float(self.__compute_left_to_sale())
 
     def __compute_wall_height(self) -> frac:
-        return frac(self.ceiling_ord) - frac(self.floor_ord)
+        return frac(str(self.ceiling_ord)) - frac(str(self.floor_ord))
 
     def __compute_gross_wall_area(self) -> frac:
         wall_height = self.__compute_wall_height()
-        return frac(self.wall_length) * wall_height
+        return frac(str(self.wall_length)) * wall_height
 
     def __compute_wall_area_to_survey(self) -> frac:
         wall_area_to_survey = self.__compute_gross_wall_area()
@@ -305,20 +306,23 @@ class Wall(db.Model):
     @classmethod
     def delete_wall(cls, wall_id: int) -> None:
         wall = Wall.query.filter_by(id=wall_id).first()
-        db.session.delete(wall)
-        db.session.commit()
+        if wall:
+            db.session.delete(wall)
+            db.session.commit()
 
     @classmethod
     def delete_hole(cls, model_id: int) -> None:
         hole = Hole.query.filter_by(id=model_id).first()
-        db.session.delete(hole)
-        db.session.commit()
+        if hole:
+            db.session.delete(hole)
+            db.session.commit()
 
     @classmethod
     def delete_processing(cls, model_id: int) -> None:
         processing = Processing.query.filter_by(id=model_id).first()
-        db.session.delete(processing)
-        db.session.commit()
+        if processing:
+            db.session.delete(processing)
+            db.session.commit()
 
     @classmethod
     def create_item(cls, model: db.Model, **kwargs) -> db.Model:
@@ -343,6 +347,101 @@ class Wall(db.Model):
         if wall:
             return wall.left_to_sale
         return 0
+
+    @classmethod
+    def upload_walls(cls, filename) -> List:
+        success = 0
+        failures = []
+        file = read_csv_file(filename)
+        for item in file:
+            try:
+                wall = cls(**item)
+            except Exception:
+                failures.append(item["id"])
+            else:
+                db.session.add(wall)
+                try:
+                    db.session.commit()
+                except Exception:
+                    failures.append(item["id"])
+                    db.session.rollback()
+                else:
+                    success += 1
+        return cls.create_upload_messages(success, failures)
+
+    @classmethod
+    def upload_holes(cls, filename: str) -> List:
+        success = 0
+        failures = []
+        no_wall = []
+        file = read_csv_file(filename)
+        for item in file:
+            wall = Wall.query.filter_by(id=item["wall_id"]).first()
+            if wall:
+                try:
+                    hole = Hole(**item)
+                except Exception:
+                    failures.append(item["id"])
+                else:
+                    wall.holes.append(hole)
+                    db.session.add(wall)
+                    try:
+                        db.session.commit()
+                    except Exception:
+                        failures.append(item["id"])
+                        db.session.rollback()
+                    else:
+                        success += 1
+            else:
+                no_wall.append(item["id"])
+        return cls.create_upload_messages(success, failures, no_wall)
+
+    @classmethod
+    def upload_processing(cls, filename: str) -> List:
+        success = 0
+        failures = []
+        no_wall = []
+        file = read_csv_file(filename)
+        for item in file:
+            wall = Wall.query.filter_by(id=item["wall_id"]).first()
+            if wall:
+                try:
+                    processing = Processing(**item)
+                except Exception:
+                    failures.append(item["id"])
+                else:
+                    wall.processing.append(processing)
+                    db.session.add(wall)
+                    try:
+                        db.session.commit()
+                    except Exception:
+                        failures.append(item["id"])
+                        db.session.rollback()
+                    else:
+                        success += 1
+            else:
+                no_wall.append(item["id"])
+        return cls.create_upload_messages(success, failures, no_wall)
+
+    @classmethod
+    def create_upload_messages(
+        self, success: int, failures: List, no_wall: List = None
+    ) -> List:
+        messages = []
+        messages.append("Uploaded {} items.".format(success))
+        if failures:
+            messages.append(
+                "Items: {} not added because they are duplicated or has the wrong format.".format(
+                    failures
+                )
+            )
+        if no_wall:
+            messages.append(
+                "Items: {} not added because wall with specified id does not exist. Add wall first.".format(
+                    no_wall
+                )
+            )
+        return messages
 
     def __repr__(self) -> str:
         return "<Wall(id=%s)>" % (self.id,)

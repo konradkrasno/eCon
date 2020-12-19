@@ -1,10 +1,12 @@
 from typing import *
 
+import os
 from flask import render_template, flash, redirect, url_for, request
 from app.production.masonry_works import bp
 from app.production.masonry_works.forms import WallForm, HoleForm, ProcessingForm
 from app.main.forms import WarrantyForm
 from app.models import Hole, Processing, Wall
+from app.loading_csv import remove_file
 
 
 @bp.route("/production/walls")
@@ -196,7 +198,8 @@ def delete_hole(wall_id: int, hole_id: int) -> str:
 
 
 @bp.route(
-    "/production/delete_processing/<int:wall_id>/<int:proc_id>", methods=["GET", "POST"]
+    "/production/delete_processing/<int:wall_id>/<int:proc_id>",
+    methods=["GET", "POST"],
 )
 def delete_processing(wall_id: int, proc_id: int) -> str:
     form = WarrantyForm()
