@@ -1,29 +1,12 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
-{% block content %}
-    <h1>Add new item</h1>
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-
-        {{ form.width.label }}<br>
-        {{ form.width(size=20) }}<br>
-        {% for error in form.width.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-
-        {{ form.height.label }}<br>
-        {{ form.height(size=20) }}<br>
-        {% for error in form.height.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-
-        {{ form.amount.label }}<br>
-        {{ form.amount(size=20) }}<br>
-        {% for error in form.amount.errors %}
-        <span style="color: red;">[{{ error }}]</span>
-        {% endfor %}
-
-        <p>{{ form.submit() }}</p>
-
-    </form>
+{% block title_content %}Quantity survey of the masonry works.{% endblock %}
+{% block app_content %}
+    <h4>Add a new hole</h4>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
 {% endblock %}

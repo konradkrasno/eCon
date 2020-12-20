@@ -22,8 +22,8 @@ def test_create_hole(app_and_db):
     db.session.add(hole)
     db.session.commit()
     hole = Hole.query.filter_by(width=1.2).first()
-    assert hole.width == "1.2"
-    assert hole.height == "2"
+    assert hole.width == 1.2
+    assert hole.height == 2
     assert hole.amount == 2
     assert hole.area == 2.4
     assert hole.total_area == 4.8
@@ -36,9 +36,9 @@ def test_edit_hole(app_and_db):
     db.session.add(hole)
     db.session.commit()
     hole = Hole.query.filter_by(width=1.2).first()
-    hole.width = "2.5"
-    assert hole.width == "2.5"
-    assert hole.height == "2"
+    hole.width = 2.5
+    assert hole.width == 2.5
+    assert hole.height == 2
     assert hole.amount == 2
     assert hole.area == 5.0
     assert hole.total_area == 10.0
@@ -51,7 +51,7 @@ def test_create_processing(app_and_db):
     db.session.add(processing)
     db.session.commit()
     processing = Processing.query.filter_by(id=1).first()
-    assert processing.done == "0.4"
+    assert processing.done == 0.4
 
 
 def test_create_processing_with_done_above_1():
@@ -66,7 +66,7 @@ def test_edit_processing(app_and_db):
     db.session.add(processing)
     db.session.commit()
     processing = Processing.query.filter_by(id=1).first()
-    assert processing.done == "0.6"
+    assert processing.done == 0.6
 
 
 def test_edit_processing_with_done_above_1():
@@ -101,8 +101,8 @@ def test_add_processing_when_overrun(add_wall):
     Wall.add_processing(wall_id, year=2020, month="December", done=0.4)
     Wall.add_processing(wall_id, year=2020, month="December", done=0.7)
     wall = Wall.query.filter_by(id=wall_id).first()
-    assert wall.processing.filter_by(id=1).first().done == "0.4"
-    assert wall.processing.filter_by(id=2).first().done == "0.6"
+    assert wall.processing.filter_by(id=1).first().done == 0.4
+    assert wall.processing.filter_by(id=2).first().done == 0.6
     assert wall.left_to_sale == 0.0
 
 
@@ -137,14 +137,14 @@ def test_update_wall(add_wall):
 def test_update_hole(add_wall):
     wall = Wall.get_all_items()[0]
     Wall.add_hole(wall.id, width=1.2, height=2.0, amount=2)
-    assert wall.holes[0].width == "1.2"
-    assert wall.holes[0].height == "2.0"
+    assert wall.holes[0].width == 1.2
+    assert wall.holes[0].height == 2.0
     assert wall.holes[0].amount == 2
     assert wall.wall_area_to_survey == 27.75
     hole = wall.holes[0]
     Wall.edit_hole(hole.id, width=1.5, height=2.5, amount=1)
-    assert wall.holes[0].width == "1.5"
-    assert wall.holes[0].height == "2.5"
+    assert wall.holes[0].width == 1.5
+    assert wall.holes[0].height == 2.5
     assert wall.holes[0].amount == 1
     assert wall.wall_area_to_survey == 28.8
 
@@ -154,13 +154,13 @@ def test_update_processing(add_wall):
     Wall.add_processing(wall.id, year=2020, month="December", done=0.3)
     assert wall.processing[0].year == 2020
     assert wall.processing[0].month == "December"
-    assert wall.processing[0].done == "0.3"
+    assert wall.processing[0].done == 0.3
     assert wall.left_to_sale == 0.7
     processing = wall.processing[0]
     Wall.edit_processing(processing.id, year=2021, month="January", done=0.6)
     assert wall.processing[0].year == 2021
     assert wall.processing[0].month == "January"
-    assert wall.processing[0].done == "0.6"
+    assert wall.processing[0].done == 0.6
     assert wall.left_to_sale == 0.4
 
 
@@ -168,12 +168,12 @@ def test_update_processing_when_overrun(add_wall):
     wall = Wall.get_all_items()[0]
     Wall.add_processing(wall.id, year=2020, month="December", done=0.6)
     Wall.add_processing(wall.id, year=2020, month="December", done=0.3)
-    assert wall.processing.filter_by(id=1).first().done == "0.6"
-    assert wall.processing.filter_by(id=2).first().done == "0.3"
+    assert wall.processing.filter_by(id=1).first().done == 0.6
+    assert wall.processing.filter_by(id=2).first().done == 0.3
     assert wall.left_to_sale == 0.1
     Wall.edit_processing(2, done=0.5)
-    assert wall.processing.filter_by(id=1).first().done == "0.6"
-    assert wall.processing.filter_by(id=2).first().done == "0.4"
+    assert wall.processing.filter_by(id=1).first().done == 0.6
+    assert wall.processing.filter_by(id=2).first().done == 0.4
     assert wall.left_to_sale == 0.0
 
 

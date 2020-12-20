@@ -1,12 +1,12 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
-{% block content %}
-
-<title>Upload new File</title>
-<h2>Upload new File</h2>
+{% block title_content %}Quantity survey of the masonry works.{% endblock %}
+{% block app_content %}
+<h4>Upload new File</h4>
+<br>
 <form method=post enctype=multipart/form-data>
   <input type=file name=file>
   <input type=submit value=Upload>
 </form>
-
 {% endblock %}

@@ -49,18 +49,18 @@ class Investment(db.Model):
 
 class Hole(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    width = db.Column(db.Float)
-    height = db.Column(db.Float)
+    width = db.Column(db.Float(precision=2))
+    height = db.Column(db.Float(precision=2))
     amount = db.Column(db.Integer)
     wall_id = db.Column(db.Integer, db.ForeignKey("wall.id", ondelete="CASCADE"))
 
     @hybrid_property
     def area(self):
-        return float(self.__compute_area())
+        return round(float(self.__compute_area()), 2)
 
     @hybrid_property
     def total_area(self):
-        return float(self.__compute_total_area())
+        return round(float(self.__compute_total_area()), 2)
 
     @hybrid_property
     def below_3m2(self):
@@ -76,17 +76,6 @@ class Hole(db.Model):
     def __compute_below_3m2(self) -> bool:
         return True if self.area < 3 else False
 
-    @staticmethod
-    def get_header() -> List:
-        return [
-            "Hole width",
-            "Hole height",
-            "Holes amount",
-            "Hole area",
-            "Holes area",
-            "Hole below 3 square metres",
-        ]
-
     @classmethod
     def get_items_by_wall_id(cls, wall_id: int) -> db.Model:
         return cls.query.filter_by(wall_id=wall_id).order_by(cls.id).all()
@@ -96,7 +85,7 @@ class Processing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer)
     month = db.Column(db.String(64))
-    _done = db.Column(db.Float)
+    _done = db.Column(db.Float(precision=2))
     wall_id = db.Column(db.Integer, db.ForeignKey("wall.id", ondelete="CASCADE"))
 
     @hybrid_property
@@ -111,14 +100,6 @@ class Processing(db.Model):
             raise ValueError("Value: done cannot be greater then 1!")
         self._done = value
 
-    @staticmethod
-    def get_header() -> List:
-        return [
-            "Year",
-            "Month",
-            "Done",
-        ]
-
     @classmethod
     def get_items_by_wall_id(cls, wall_id: int) -> db.Model:
         return cls.query.filter_by(wall_id=wall_id).order_by(cls.id).all()
@@ -131,9 +112,9 @@ class Wall(db.Model):
     localization = db.Column(db.String(128))
     brick_type = db.Column(db.String(64))
     wall_width = db.Column(db.Integer)
-    wall_length = db.Column(db.Float)
-    floor_ord = db.Column(db.Float)
-    ceiling_ord = db.Column(db.Float)
+    wall_length = db.Column(db.Float(precision=2))
+    floor_ord = db.Column(db.Float(precision=2))
+    ceiling_ord = db.Column(db.Float(precision=2))
     holes = db.relationship(
         "Hole",
         backref="wall",
@@ -152,23 +133,23 @@ class Wall(db.Model):
 
     @hybrid_property
     def wall_height(self):
-        return float(self.__compute_wall_height())
+        return round(float(self.__compute_wall_height()), 2)
 
     @hybrid_property
     def gross_wall_area(self):
-        return float(self.__compute_gross_wall_area())
+        return round(float(self.__compute_gross_wall_area()), 2)
 
     @hybrid_property
     def wall_area_to_survey(self):
-        return float(self.__compute_wall_area_to_survey())
+        return round(float(self.__compute_wall_area_to_survey()), 2)
 
     @hybrid_property
     def wall_area_to_sale(self):
-        return float(self.__compute_wall_area_to_sale())
+        return round(float(self.__compute_wall_area_to_sale()), 2)
 
     @hybrid_property
     def left_to_sale(self):
-        return float(self.__compute_left_to_sale())
+        return round(float(self.__compute_left_to_sale()), 2)
 
     def __compute_wall_height(self) -> frac:
         return frac(str(self.ceiling_ord)) - frac(str(self.floor_ord))
@@ -197,25 +178,6 @@ class Wall(db.Model):
                 return frac("0.0")
             left_to_sale -= frac(str(item.done))
         return left_to_sale
-
-    @staticmethod
-    def get_header() -> List:
-        return [
-            "Id",
-            "Sector",
-            "Level",
-            "Localization",
-            "Brick type",
-            "Wall width",
-            "Wall length",
-            "Floor ordinate",
-            "Ceiling ordinate",
-            "Wall height",
-            "Gross wall area",
-            "Wall area to survey",
-            "Wall area to sale",
-            "Left to sale",
-        ]
 
     @classmethod
     def add_wall(cls, **kwargs) -> None:
@@ -376,7 +338,7 @@ class Wall(db.Model):
         no_wall = []
         file = read_csv_file(filename)
         for item in file:
-            wall = Wall.query.filter_by(id=item["wall_id"]).first()
+            wall = Wall.query.filter_by(id=item.get("wall_id")).first()
             if wall:
                 try:
                     hole = Hole(**item)
@@ -403,7 +365,7 @@ class Wall(db.Model):
         no_wall = []
         file = read_csv_file(filename)
         for item in file:
-            wall = Wall.query.filter_by(id=item["wall_id"]).first()
+            wall = Wall.query.filter_by(id=item.get("wall_id")).first()
             if wall:
                 try:
                     processing = Processing(**item)

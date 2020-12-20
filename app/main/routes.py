@@ -29,7 +29,7 @@ def login() -> str:
     if form.validate_on_submit():
         flash("{}, you are logged in.".format(form.username.data))
         return redirect(url_for("main.index"))
-    return render_template("login.html", title="Sign In", form=form)
+    return render_template("login.html", title="Log In", form=form)
 
 
 @bp.route("/tasks")
@@ -44,7 +44,7 @@ def team() -> str:
 
 @bp.route("/production")
 def production() -> str:
-    return render_template("production/production.html")
+    return render_template("production/production.html", title="Production")
 
 
 @bp.route("/documents")

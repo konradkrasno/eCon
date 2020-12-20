@@ -20,20 +20,20 @@ def test_login(client, captured_templates):
     assert len(captured_templates) == 1
     template, context = captured_templates[0]
     assert template.name == "login.html"
-    assert context["title"] == "Sign In"
+    assert context["title"] == "Log In"
     assert isinstance(context["form"], LoginForm)
 
 
 @pytest.mark.parametrize(
-    "username, password, message",
+    "username, password",
     [
-        ("Konrad", "", b"[This field is required.]"),
-        ("", "test_password", b"[This field is required.]"),
+        ("Konrad", ""),
+        ("", "test_password"),
     ],
 )
-def test_login_validate_input(client, username, password, message):
+def test_login_validate_input(client, username, password):
     response = client.post("/login", data={"username": username, "password": password})
-    assert message in response.data
+    assert response.status_code == 200
 
 
 # def test_login_when_login(client):

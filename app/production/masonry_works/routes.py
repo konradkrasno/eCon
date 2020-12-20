@@ -1,55 +1,60 @@
 from typing import *
 
-import os
 from flask import render_template, flash, redirect, url_for, request
 from app.production.masonry_works import bp
 from app.production.masonry_works.forms import WallForm, HoleForm, ProcessingForm
 from app.main.forms import WarrantyForm
 from app.models import Hole, Processing, Wall
-from app.loading_csv import remove_file
 
 
-@bp.route("/production/walls")
+@bp.route("/masonry_works/walls")
 def walls() -> str:
     items = Wall.get_all_items()
-    wall_header = Wall.get_header()
     return render_template(
         "production/masonry_works/walls.html",
         title="Walls",
         items=items,
-        wall_header=wall_header,
     )
 
 
-@bp.route("/production/holes/<int:wall_id>")
-def holes(wall_id: int) -> str:
+@bp.route("/masonry_works/holes")
+def holes() -> str:
+    wall_id = request.args.get("wall_id")
     items = Hole.get_items_by_wall_id(wall_id)
-    hole_header = Hole.get_header()
     return render_template(
         "production/masonry_works/holes.html",
         title="Holes",
         items=items,
-        hole_header=hole_header,
         wall_id=wall_id,
     )
 
 
-@bp.route("/production/processing/<int:wall_id>")
-def processing(wall_id: int) -> str:
+@bp.route("/masonry_works/processing")
+def processing() -> str:
+    wall_id = request.args.get("wall_id")
     items = Processing.get_items_by_wall_id(wall_id)
     left_to_sale = Wall.get_left_to_sale(wall_id)
-    processing_header = Processing.get_header()
     return render_template(
         "production/masonry_works/processing.html",
         title="Processing",
         items=items,
-        processing_header=processing_header,
         wall_id=wall_id,
         left_to_sale=left_to_sale,
     )
 
 
-@bp.route("/production/add_wall", methods=["GET", "POST"])
+@bp.route("/masonry_works/modify")
+def modify() -> str:
+    wall_id = request.args.get("wall_id")
+    item = Wall.query.filter_by(id=wall_id).first()
+    return render_template(
+        "production/masonry_works/modify.html",
+        title="Modify",
+        item=item
+    )
+
+
+@bp.route("/masonry_works/add_wall", methods=["GET", "POST"])
 def add_wall() -> str:
     form = WallForm()
     if form.validate_on_submit():
@@ -61,23 +66,25 @@ def add_wall() -> str:
     )
 
 
-@bp.route("/production/add_hole/<int:wall_id>", methods=["GET", "POST"])
-def add_hole(wall_id: int) -> str:
+@bp.route("/masonry_works/add_hole", methods=["GET", "POST"])
+def add_hole() -> str:
+    wall_id = request.args.get("wall_id")
     form = HoleForm()
     if form.validate_on_submit():
         Wall.add_hole(wall_id, **form.data)
         flash("You added a new hole.")
         next_page = request.args.get("next_page")
         if not next_page:
-            next_page = url_for("masonry_works.walls")
+            next_page = url_for("masonry_works.modify", wall_id=wall_id)
         return redirect(next_page)
     return render_template(
         "production/masonry_works/forms/hole_form.html", title="Add Hole", form=form
     )
 
 
-@bp.route("/production/add_processing/<int:wall_id>", methods=["GET", "POST"])
-def add_processing(wall_id: int) -> str:
+@bp.route("/masonry_works/add_processing", methods=["GET", "POST"])
+def add_processing() -> str:
+    wall_id = request.args.get("wall_id")
     form = ProcessingForm()
     if form.validate_on_submit():
         try:
@@ -88,7 +95,7 @@ def add_processing(wall_id: int) -> str:
             flash("You added a new processing.")
             next_page = request.args.get("next_page")
             if not next_page:
-                next_page = url_for("masonry_works.walls")
+                next_page = url_for("masonry_works.modify", wall_id=wall_id)
             return redirect(next_page)
     return render_template(
         "production/masonry_works/forms/processing_form.html",
@@ -97,8 +104,9 @@ def add_processing(wall_id: int) -> str:
     )
 
 
-@bp.route("/production/edit_wall/<int:wall_id>", methods=["GET", "POST"])
-def edit_wall(wall_id: int) -> str:
+@bp.route("/masonry_works/edit_wall", methods=["GET", "POST"])
+def edit_wall() -> str:
+    wall_id = request.args.get("wall_id")
     wall = Wall.query.filter_by(id=wall_id).first()
     form = WallForm(
         sector=wall.sector,
@@ -113,7 +121,7 @@ def edit_wall(wall_id: int) -> str:
     if form.validate_on_submit():
         Wall.edit_wall(wall_id, **form.data)
         flash("You modified the wall.")
-        return redirect(url_for("masonry_works.walls"))
+        return redirect(url_for("masonry_works.modify", wall_id=wall_id))
     return render_template(
         "production/masonry_works/forms/wall_form.html",
         title="Edit Wall",
@@ -121,8 +129,12 @@ def edit_wall(wall_id: int) -> str:
     )
 
 
-@bp.route("/production/edit_hole/<int:wall_id>/<int:hole_id>", methods=["GET", "POST"])
-def edit_hole(wall_id: int, hole_id: int) -> str:
+@bp.route(
+    "/masonry_works/edit_hole", methods=["GET", "POST"]
+)
+def edit_hole() -> str:
+    wall_id = request.args.get("wall_id")
+    hole_id = request.args.get("hole_id")
     hole = Hole.query.filter_by(id=hole_id).first()
     form = HoleForm(
         width=hole.width,
@@ -141,9 +153,12 @@ def edit_hole(wall_id: int, hole_id: int) -> str:
 
 
 @bp.route(
-    "/production/edit_processing/<int:wall_id>/<int:proc_id>", methods=["GET", "POST"]
+    "/masonry_works/edit_processing",
+    methods=["GET", "POST"],
 )
-def edit_processing(wall_id: int, proc_id: int) -> str:
+def edit_processing() -> str:
+    wall_id = request.args.get("wall_id")
+    proc_id = request.args.get("proc_id")
     processing = Processing.query.filter_by(id=proc_id).first()
     form = ProcessingForm(
         year=processing.year,
@@ -161,16 +176,21 @@ def edit_processing(wall_id: int, proc_id: int) -> str:
     )
 
 
-@bp.route("/production/delete_wall/<int:wall_id>", methods=["GET", "POST"])
-def delete_wall(wall_id: int) -> str:
+@bp.route("/masonry_works/delete_wall", methods=["GET", "POST"])
+def delete_wall() -> str:
+    wall_id = request.args.get("wall_id")
     form = WarrantyForm()
     if form.validate_on_submit():
         if form.no.data:
             flash("Wall has not been deleted.")
+            next_page = request.args.get("next_page")
+            if not next_page:
+                next_page = url_for("masonry_works.walls")
+            return redirect(next_page)
         elif form.yes.data:
             Wall.delete_wall(wall_id)
             flash("Wall has been deleted.")
-        return redirect(url_for("masonry_works.walls"))
+            return redirect(url_for("masonry_works.walls"))
     return render_template(
         "warranty_form.html",
         title="Delete Wall",
@@ -179,9 +199,11 @@ def delete_wall(wall_id: int) -> str:
 
 
 @bp.route(
-    "/production/delete_hole/<int:wall_id>/<int:hole_id>", methods=["GET", "POST"]
+    "/masonry_works/delete_hole", methods=["GET", "POST"]
 )
-def delete_hole(wall_id: int, hole_id: int) -> str:
+def delete_hole() -> str:
+    wall_id = request.args.get("wall_id")
+    hole_id = request.args.get("hole_id")
     form = WarrantyForm()
     if form.validate_on_submit():
         if form.no.data:
@@ -198,10 +220,12 @@ def delete_hole(wall_id: int, hole_id: int) -> str:
 
 
 @bp.route(
-    "/production/delete_processing/<int:wall_id>/<int:proc_id>",
+    "/masonry_works/delete_processing",
     methods=["GET", "POST"],
 )
-def delete_processing(wall_id: int, proc_id: int) -> str:
+def delete_processing() -> str:
+    wall_id = request.args.get("wall_id")
+    proc_id = request.args.get("proc_id")
     form = WarrantyForm()
     if form.validate_on_submit():
         if form.no.data:

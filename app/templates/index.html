@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 
-{% block content %}
-    <h1>Hi, {{ user.username }}!</h1>
-    <div><a href="{{ url_for('main.tasks') }}">Tasks</a></div>
-    <div><a href="{{ url_for('main.team') }}">Team</a></div>
-    <div><a href="{{ url_for('main.production') }}">Production</a></div>
-    <div><a href="{{ url_for('main.documents') }}">Documents</a></div>
-    <div><a href="{{ url_for('main.project') }}">Project</a></div>
-    <div><a href="{{ url_for('main.schedule') }}">Schedule</a></div>
+{% block title_content %}Hi, Konrad{% endblock %}
+{% block app_content %}
+    <a class="nav-link" href="#">
+      <span data-feather="chevrons-right"></span>
+      Investments
+    </a>
 {% endblock %}
