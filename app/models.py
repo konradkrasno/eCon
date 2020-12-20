@@ -314,21 +314,25 @@ class Wall(db.Model):
     def upload_walls(cls, filename) -> List:
         success = 0
         failures = []
-        file = read_csv_file(filename)
-        for item in file:
-            try:
-                wall = cls(**item)
-            except Exception:
-                failures.append(item["id"])
-            else:
-                db.session.add(wall)
+        try:
+            file = read_csv_file(filename)
+        except Exception as e:
+            return ['An error occurred: "{}", while loading file: "{}"'.format(e, filename)]
+        else:
+            for item in file:
                 try:
-                    db.session.commit()
+                    wall = cls(**item)
                 except Exception:
                     failures.append(item["id"])
-                    db.session.rollback()
                 else:
-                    success += 1
+                    db.session.add(wall)
+                    try:
+                        db.session.commit()
+                    except Exception:
+                        failures.append(item["id"])
+                        db.session.rollback()
+                    else:
+                        success += 1
         return cls.create_upload_messages(success, failures)
 
     @classmethod
@@ -336,54 +340,62 @@ class Wall(db.Model):
         success = 0
         failures = []
         no_wall = []
-        file = read_csv_file(filename)
-        for item in file:
-            wall = Wall.query.filter_by(id=item.get("wall_id")).first()
-            if wall:
-                try:
-                    hole = Hole(**item)
-                except Exception:
-                    failures.append(item["id"])
-                else:
-                    wall.holes.append(hole)
-                    db.session.add(wall)
+        try:
+            file = read_csv_file(filename)
+        except Exception as e:
+            return ['An error occurred: "{}", while loading file: "{}"'.format(e, filename)]
+        else:
+            for item in file:
+                wall = Wall.query.filter_by(id=item.get("wall_id")).first()
+                if wall:
                     try:
-                        db.session.commit()
+                        hole = Hole(**item)
                     except Exception:
                         failures.append(item["id"])
-                        db.session.rollback()
                     else:
-                        success += 1
-            else:
-                no_wall.append(item["id"])
-        return cls.create_upload_messages(success, failures, no_wall)
+                        wall.holes.append(hole)
+                        db.session.add(wall)
+                        try:
+                            db.session.commit()
+                        except Exception:
+                            failures.append(item["id"])
+                            db.session.rollback()
+                        else:
+                            success += 1
+                else:
+                    no_wall.append(item["id"])
+            return cls.create_upload_messages(success, failures, no_wall)
 
     @classmethod
     def upload_processing(cls, filename: str) -> List:
         success = 0
         failures = []
         no_wall = []
-        file = read_csv_file(filename)
-        for item in file:
-            wall = Wall.query.filter_by(id=item.get("wall_id")).first()
-            if wall:
-                try:
-                    processing = Processing(**item)
-                except Exception:
-                    failures.append(item["id"])
-                else:
-                    wall.processing.append(processing)
-                    db.session.add(wall)
+        try:
+            file = read_csv_file(filename)
+        except Exception as e:
+            return ['An error occurred: "{}", while loading file: "{}"'.format(e, filename)]
+        else:
+            for item in file:
+                wall = Wall.query.filter_by(id=item.get("wall_id")).first()
+                if wall:
                     try:
-                        db.session.commit()
+                        processing = Processing(**item)
                     except Exception:
                         failures.append(item["id"])
-                        db.session.rollback()
                     else:
-                        success += 1
-            else:
-                no_wall.append(item["id"])
-        return cls.create_upload_messages(success, failures, no_wall)
+                        wall.processing.append(processing)
+                        db.session.add(wall)
+                        try:
+                            db.session.commit()
+                        except Exception:
+                            failures.append(item["id"])
+                            db.session.rollback()
+                        else:
+                            success += 1
+                else:
+                    no_wall.append(item["id"])
+            return cls.create_upload_messages(success, failures, no_wall)
 
     @classmethod
     def create_upload_messages(
