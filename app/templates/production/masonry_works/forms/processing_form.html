@@ -3,7 +3,12 @@
 
 {% block title_content %}Quantity survey of the masonry works.{% endblock %}
 {% block app_content %}
+    {% if title == "Edit Processing" %}
+    <h4>Edit the processing</h4>
+    {% else %}
     <h4>Add a new processing</h4>
+    {% endif %}
+
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}
