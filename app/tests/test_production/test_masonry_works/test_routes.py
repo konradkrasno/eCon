@@ -1,8 +1,8 @@
 import pytest
 
+from flask import url_for
 from app.models import Wall, Hole, Processing
 from app.tests.conftest import assert_flashes
-from app.production.masonry_works.forms import ProcessingForm
 
 
 def test_walls(client, captured_templates):
@@ -74,7 +74,6 @@ def test_add_processing(client, captured_templates):
     # assert context["form"].validate_on_submit()
     # assert_flashes(client, "You added a new processing.")
 
-from flask import url_for
 
 def test_edit_wall(client, captured_templates, add_wall):
     response = client.post(url_for("masonry_works.edit_wall", wall_id=1))

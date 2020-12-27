@@ -2,9 +2,14 @@ from typing import *
 
 from flask import render_template, flash, redirect, url_for, request
 from app.production.masonry_works import bp
-from app.production.masonry_works.forms import WallForm, HoleForm, ProcessingForm
-from app.main.forms import WarrantyForm
 from app.models import Hole, Processing, Wall
+from app.production.masonry_works.forms import (
+    AddWallForm,
+    EditWallForm,
+    HoleForm,
+    ProcessingForm,
+)
+from app.main.forms import WarrantyForm
 
 
 @bp.route("/masonry_works/walls")
@@ -48,15 +53,13 @@ def modify() -> str:
     wall_id = request.args.get("wall_id")
     item = Wall.query.filter_by(id=wall_id).first()
     return render_template(
-        "production/masonry_works/modify.html",
-        title="Modify",
-        item=item
+        "production/masonry_works/modify.html", title="Modify", item=item
     )
 
 
 @bp.route("/masonry_works/add_wall", methods=["GET", "POST"])
 def add_wall() -> str:
-    form = WallForm()
+    form = AddWallForm()
     if form.validate_on_submit():
         Wall.add_wall(**form.data)
         flash("You added a new wall.")
@@ -87,16 +90,12 @@ def add_processing() -> str:
     wall_id = request.args.get("wall_id")
     form = ProcessingForm()
     if form.validate_on_submit():
-        try:
-            Wall.add_processing(wall_id, **form.data)
-        except ValueError as e:
-            form.done.errors.append(e)
-        else:
-            flash("You added a new processing.")
-            next_page = request.args.get("next_page")
-            if not next_page:
-                next_page = url_for("masonry_works.modify", wall_id=wall_id)
-            return redirect(next_page)
+        Wall.add_processing(wall_id, **form.data)
+        flash("You added a new processing.")
+        next_page = request.args.get("next_page")
+        if not next_page:
+            next_page = url_for("masonry_works.modify", wall_id=wall_id)
+        return redirect(next_page)
     return render_template(
         "production/masonry_works/forms/processing_form.html",
         title="Add Processing",
@@ -108,7 +107,7 @@ def add_processing() -> str:
 def edit_wall() -> str:
     wall_id = request.args.get("wall_id")
     wall = Wall.query.filter_by(id=wall_id).first()
-    form = WallForm(
+    form = EditWallForm(
         sector=wall.sector,
         level=wall.level,
         localization=wall.localization,
@@ -129,9 +128,7 @@ def edit_wall() -> str:
     )
 
 
-@bp.route(
-    "/masonry_works/edit_hole", methods=["GET", "POST"]
-)
+@bp.route("/masonry_works/edit_hole", methods=["GET", "POST"])
 def edit_hole() -> str:
     wall_id = request.args.get("wall_id")
     hole_id = request.args.get("hole_id")
@@ -198,9 +195,7 @@ def delete_wall() -> str:
     )
 
 
-@bp.route(
-    "/masonry_works/delete_hole", methods=["GET", "POST"]
-)
+@bp.route("/masonry_works/delete_hole", methods=["GET", "POST"])
 def delete_hole() -> str:
     wall_id = request.args.get("wall_id")
     hole_id = request.args.get("hole_id")

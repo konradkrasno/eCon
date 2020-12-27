@@ -12,8 +12,8 @@ from werkzeug.utils import secure_filename
 from config import config
 from app.main import bp
 from app.main.forms import LoginForm
-from app.models import User, Investment, Wall
 from app.loading_csv import remove_file
+from app.models import Wall
 
 
 @bp.route("/")

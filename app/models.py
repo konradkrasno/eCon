@@ -3,7 +3,17 @@ from typing import *
 from sqlalchemy.ext.hybrid import hybrid_property
 from fractions import Fraction as frac
 from app import db
+from app.validators import (
+    check_field_exists,
+    validate_walls,
+    validate_holes,
+    validate_processing,
+    validate_done_attr_while_adding,
+    validate_done_attr_while_editing,
+)
+from wtforms.validators import ValidationError
 from app.loading_csv import read_csv_file
+
 
 investment_associate = db.Table(
     "investment_associate",
@@ -77,6 +87,15 @@ class Hole(db.Model):
         return True if self.area < 3 else False
 
     @classmethod
+    def create_item(cls, **kwargs) -> db.Model:
+        return cls(
+            width=kwargs.get("width"),
+            height=kwargs.get("height"),
+            amount=kwargs.get("amount"),
+            wall_id=kwargs.get("wall_id"),
+        )
+
+    @classmethod
     def get_items_by_wall_id(cls, wall_id: int) -> db.Model:
         return cls.query.filter_by(wall_id=wall_id).order_by(cls.id).all()
 
@@ -99,6 +118,15 @@ class Processing(db.Model):
         if frac(str(value)) > frac("1"):
             raise ValueError("Value: done cannot be greater then 1!")
         self._done = value
+
+    @classmethod
+    def create_item(cls, **kwargs) -> db.Model:
+        return cls(
+            year=kwargs.get("year"),
+            month=kwargs.get("month"),
+            done=kwargs.get("done"),
+            wall_id=kwargs.get("wall_id"),
+        )
 
     @classmethod
     def get_items_by_wall_id(cls, wall_id: int) -> db.Model:
@@ -180,16 +208,30 @@ class Wall(db.Model):
         return left_to_sale
 
     @classmethod
+    def create_item(cls, **kwargs) -> db.Model:
+        return cls(
+            id=kwargs.get("id"),
+            sector=kwargs.get("sector"),
+            level=kwargs.get("level"),
+            localization=kwargs.get("localization"),
+            brick_type=kwargs.get("brick_type"),
+            wall_width=kwargs.get("wall_width"),
+            wall_length=kwargs.get("wall_length"),
+            floor_ord=kwargs.get("floor_ord"),
+            ceiling_ord=kwargs.get("ceiling_ord"),
+        )
+
+    @classmethod
     def add_wall(cls, **kwargs) -> None:
-        item = cls.create_item(cls, **kwargs)
-        db.session.add(item)
+        wall = cls.create_item(**kwargs)
+        db.session.add(wall)
         db.session.commit()
 
     @classmethod
     def add_hole(cls, wall_id: int, **kwargs) -> None:
         wall = cls.query.filter_by(id=wall_id).first()
         if wall:
-            hole = cls.create_item(Hole, **kwargs)
+            hole = Hole.create_item(**kwargs)
             wall.holes.append(hole)
             db.session.add(wall)
             db.session.commit()
@@ -198,21 +240,11 @@ class Wall(db.Model):
     def add_processing(cls, wall_id: int, **kwargs) -> None:
         wall = cls.query.filter_by(id=wall_id).first()
         if wall:
-            kwargs = cls.validate_done_attr_while_adding(wall, kwargs)
-            processing = cls.create_item(Processing, **kwargs)
+            kwargs = validate_done_attr_while_adding(wall, kwargs)
+            processing = Processing.create_item(**kwargs)
             wall.processing.append(processing)
             db.session.add(wall)
             db.session.commit()
-
-    @staticmethod
-    def validate_done_attr_while_adding(wall: db.Model, data: Dict) -> Dict:
-        done = data.get("done")
-        if done:
-            if float(done) > 1:
-                raise ValueError("Value: done cannot be greater then 1!")
-            if float(wall.left_to_sale) < float(done):
-                data["done"] = str(wall.left_to_sale)
-        return data
 
     @classmethod
     def edit_wall(cls, wall_id: int, **kwargs) -> None:
@@ -246,24 +278,16 @@ class Wall(db.Model):
         if wall:
             processing = wall.processing.filter_by(id=model_id).first()
             if processing:
-                kwargs = cls.validate_done_attr_while_editing(wall, processing, kwargs)
+                kwargs = validate_done_attr_while_editing(wall, processing, kwargs)
                 cls.update_item(processing, **kwargs)
                 db.session.add(wall)
                 db.session.commit()
 
     @staticmethod
-    def validate_done_attr_while_editing(
-        wall: db.Model, processing: db.Model, data: Dict
-    ) -> Dict:
-        done = data.get("done")
-        if done:
-            if float(done) > 1:
-                raise ValueError("Value: done cannot be greater then 1!")
-            left_to_sale = frac(str(wall.left_to_sale))
-            left_to_sale += frac(str(processing.done))
-            if float(left_to_sale) < float(done):
-                data["done"] = str(float(left_to_sale))
-        return data
+    def update_item(item: db.Model, **kwargs) -> db.Model:
+        for attr, val in kwargs.items():
+            item.__setattr__(attr, val)
+        return item
 
     @classmethod
     def delete_wall(cls, wall_id: int) -> None:
@@ -287,16 +311,150 @@ class Wall(db.Model):
             db.session.commit()
 
     @classmethod
-    def create_item(cls, model: db.Model, **kwargs) -> db.Model:
-        item = model()
-        cls.update_item(item, **kwargs)
-        return item
+    def upload_walls(cls, filename: str) -> List:
+        success = 0
+        failures = []
+        try:
+            file = read_csv_file(filename)
+        except Exception as e:
+            return [
+                'An error occurred: "{}", while loading file: "{}"'.format(e, filename)
+            ]
+        else:
+            for data in file:
+                _id = check_field_exists(data, "id")
+                if _id:
+                    try:
+                        data = validate_walls(data)
+                    except ValidationError:
+                        failures.append(_id)
+                    else:
+                        wall = Wall.query.filter_by(id=_id).first()
+                        if wall:
+                            wall = Wall.update_item(wall, **data)
+                        else:
+                            wall = Wall.create_item(**data)
+                        db.session.add(wall)
+                        try:
+                            db.session.commit()
+                        except Exception:
+                            db.session.rollback()
+                            failures.append(_id)
+                        else:
+                            success += 1
+            return cls.create_upload_messages(success, failures)
+
+    @classmethod
+    def upload_holes(cls, filename: str) -> List:
+        success = 0
+        failures = []
+        no_wall = []
+        wall_ids = []
+        try:
+            file = read_csv_file(filename)
+        except Exception as e:
+            return [
+                'An error occurred: "{}", while loading file: "{}"'.format(e, filename)
+            ]
+        else:
+            for data in file:
+                wall_id = check_field_exists(data, "wall_id")
+                if wall_id:
+                    wall = Wall.query.filter_by(id=wall_id).first()
+                    if wall:
+                        # deleting all holes with particular wall_id before uploading from csv
+                        if wall_id not in wall_ids:
+                            Hole.query.filter_by(wall_id=wall_id).delete()
+                            wall_ids.append(wall_id)
+                        try:
+                            data = validate_holes(data)
+                        except ValidationError:
+                            failures.append(wall_id)
+                        else:
+                            hole = Hole.create_item(**data)
+                            wall.holes.append(hole)
+                            db.session.add(wall)
+                            try:
+                                db.session.commit()
+                            except Exception:
+                                db.session.rollback()
+                                failures.append(wall_id)
+                            else:
+                                success += 1
+                    else:
+                        no_wall.append(wall_id)
+            return cls.create_upload_messages(success, failures, no_wall)
+
+    @classmethod
+    def upload_processing(cls, filename: str) -> List:
+        success = 0
+        failures = []
+        no_wall = []
+        no_left = []
+        wall_ids = []
+        try:
+            file = read_csv_file(filename)
+        except Exception as e:
+            return [
+                'An error occurred: "{}", while loading file: "{}"'.format(e, filename)
+            ]
+        else:
+            for data in file:
+                wall_id = check_field_exists(data, "wall_id")
+                if wall_id:
+                    wall = Wall.query.filter_by(id=wall_id).first()
+                    if wall:
+                        # deleting all processing with particular wall_id before uploading from csv
+                        if wall_id not in wall_ids:
+                            Processing.query.filter_by(wall_id=wall_id).delete()
+                            wall_ids.append(wall_id)
+                        if wall.left_to_sale == 0:
+                            no_left.append(wall_id)
+                            continue
+                        try:
+                            data = validate_processing(wall, data)
+                        except ValidationError:
+                            failures.append(wall_id)
+                        else:
+                            processing = Processing.create_item(**data)
+                            wall.processing.append(processing)
+                            db.session.add(wall)
+                            try:
+                                db.session.commit()
+                            except Exception:
+                                db.session.rollback()
+                                failures.append(wall_id)
+                            else:
+                                success += 1
+                    else:
+                        no_wall.append(wall_id)
+            return cls.create_upload_messages(success, failures, no_wall, no_left)
 
     @staticmethod
-    def update_item(item: db.Model, **kwargs) -> db.Model:
-        for attr, val in kwargs.items():
-            item.__setattr__(attr, val)
-        return item
+    def create_upload_messages(
+        success: int, failures: List, no_wall: List = None, no_left=None
+    ) -> List:
+        messages = []
+        messages.append("Uploaded {} items.".format(success))
+        if failures:
+            messages.append(
+                "Items: {} not added because they has the wrong format.".format(
+                    failures
+                )
+            )
+        if no_wall:
+            messages.append(
+                "Items: {} not added because wall with specified id does not exist. Add wall first.".format(
+                    no_wall
+                )
+            )
+        if no_left:
+            messages.append(
+                "Items: {} not added because value of left_to_sale is 0.".format(
+                    no_left
+                )
+            )
+        return messages
 
     @classmethod
     def get_all_items(cls) -> db.Model:
@@ -309,113 +467,6 @@ class Wall(db.Model):
         if wall:
             return wall.left_to_sale
         return 0
-
-    @classmethod
-    def upload_walls(cls, filename) -> List:
-        success = 0
-        failures = []
-        try:
-            file = read_csv_file(filename)
-        except Exception as e:
-            return ['An error occurred: "{}", while loading file: "{}"'.format(e, filename)]
-        else:
-            for item in file:
-                try:
-                    wall = cls(**item)
-                except Exception:
-                    failures.append(item["id"])
-                else:
-                    db.session.add(wall)
-                    try:
-                        db.session.commit()
-                    except Exception:
-                        failures.append(item["id"])
-                        db.session.rollback()
-                    else:
-                        success += 1
-        return cls.create_upload_messages(success, failures)
-
-    @classmethod
-    def upload_holes(cls, filename: str) -> List:
-        success = 0
-        failures = []
-        no_wall = []
-        try:
-            file = read_csv_file(filename)
-        except Exception as e:
-            return ['An error occurred: "{}", while loading file: "{}"'.format(e, filename)]
-        else:
-            for item in file:
-                wall = Wall.query.filter_by(id=item.get("wall_id")).first()
-                if wall:
-                    try:
-                        hole = Hole(**item)
-                    except Exception:
-                        failures.append(item["id"])
-                    else:
-                        wall.holes.append(hole)
-                        db.session.add(wall)
-                        try:
-                            db.session.commit()
-                        except Exception:
-                            failures.append(item["id"])
-                            db.session.rollback()
-                        else:
-                            success += 1
-                else:
-                    no_wall.append(item["id"])
-            return cls.create_upload_messages(success, failures, no_wall)
-
-    @classmethod
-    def upload_processing(cls, filename: str) -> List:
-        success = 0
-        failures = []
-        no_wall = []
-        try:
-            file = read_csv_file(filename)
-        except Exception as e:
-            return ['An error occurred: "{}", while loading file: "{}"'.format(e, filename)]
-        else:
-            for item in file:
-                wall = Wall.query.filter_by(id=item.get("wall_id")).first()
-                if wall:
-                    try:
-                        processing = Processing(**item)
-                    except Exception:
-                        failures.append(item["id"])
-                    else:
-                        wall.processing.append(processing)
-                        db.session.add(wall)
-                        try:
-                            db.session.commit()
-                        except Exception:
-                            failures.append(item["id"])
-                            db.session.rollback()
-                        else:
-                            success += 1
-                else:
-                    no_wall.append(item["id"])
-            return cls.create_upload_messages(success, failures, no_wall)
-
-    @classmethod
-    def create_upload_messages(
-        self, success: int, failures: List, no_wall: List = None
-    ) -> List:
-        messages = []
-        messages.append("Uploaded {} items.".format(success))
-        if failures:
-            messages.append(
-                "Items: {} not added because they are duplicated or has the wrong format.".format(
-                    failures
-                )
-            )
-        if no_wall:
-            messages.append(
-                "Items: {} not added because wall with specified id does not exist. Add wall first.".format(
-                    no_wall
-                )
-            )
-        return messages
 
     def __repr__(self) -> str:
         return "<Wall(id=%s)>" % (self.id,)

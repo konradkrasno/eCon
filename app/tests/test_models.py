@@ -5,7 +5,7 @@ from app.models import User, Investment, Hole, Processing, Wall
 
 def test_create_item_when_wrong_attribute(wall_data):
     wall_data["wrong_attr"] = 5
-    item = Wall.create_item(Wall, **wall_data)
+    item = Wall.create_item(**wall_data)
     assert item
 
 
@@ -88,6 +88,15 @@ def test_add_wall(app_and_db, wall_data):
     assert wall.left_to_sale == 0.6
 
 
+def test_add_hole_without_height(add_wall):
+    wall = Wall.get_all_items()[0]
+    Wall.add_hole(wall.id, width=1.2, amount=2)
+    hole = Hole.query.first()
+    assert hole.height == None
+    with pytest.raises(ValueError):
+        assert hole.area
+
+
 def test_add_processing(add_wall):
     wall = Wall.get_all_items()[0]
     assert wall.left_to_sale == 1.0
@@ -108,8 +117,10 @@ def test_add_processing_when_overrun(add_wall):
 
 def test_add_processing_when_done_above_1(add_wall):
     wall_id = Wall.get_all_items()[0].id
-    with pytest.raises(ValueError):
-        Wall.add_processing(wall_id, year=2020, month="December", done=2)
+    Wall.add_processing(wall_id, year=2020, month="December", done=2)
+    wall = Wall.query.filter_by(id=wall_id).first()
+    assert wall.processing[0].done == 1.0
+    assert wall.left_to_sale == 0.0
 
 
 def test_update_item_when_wrong_attr(wall_data):
@@ -180,9 +191,10 @@ def test_update_processing_when_overrun(add_wall):
 def test_update_processing_when_done_above_1(add_wall):
     wall = Wall.get_all_items()[0]
     Wall.add_processing(wall.id, year=2020, month="December", done=0.6)
-    processing = wall.processing[-1]
-    with pytest.raises(ValueError):
-        Wall.edit_processing(processing.id, done=1.35)
+    processing = wall.processing[0]
+    Wall.edit_processing(processing.id, done=1.35)
+    assert wall.processing[0].done == 1.0
+    assert wall.left_to_sale == 0.0
 
 
 def test_delete_wall(add_wall):
@@ -224,9 +236,14 @@ def test_delete_processing_when_no_processing(app_and_db):
 
 def test_upload_walls(app_and_db):
     messages = Wall.upload_walls("test/walls.csv")
-    assert len(Wall.query.all()) == 17
-    assert len(messages) == 1
-    assert messages[0] == "Uploaded 17 items."
+    assert len(Wall.query.all()) == 5
+    assert len(messages) == 2
+    assert messages[0] == "Uploaded 6 items."
+    assert (
+        messages[1]
+        == "Items: [8, 9, 10, 11, 12, 13, 14, 15] not added because they has the wrong format."
+    )
+    assert Wall.query.filter_by(id=1).first().wall_width == 18
 
 
 def test_upload_walls_when_wrong_file(app_and_db):
@@ -236,45 +253,36 @@ def test_upload_walls_when_wrong_file(app_and_db):
     assert messages[0] == "Uploaded 0 items."
 
 
-def test_upload_walls_with_duplicates(app_and_db):
-    messages = Wall.upload_walls("test/walls2.csv")
-    assert len(Wall.query.all()) == 10
-    assert len(messages) == 1
-    assert messages[0] == "Uploaded 10 items."
-
-    messages = Wall.upload_walls("test/walls.csv")
-    assert len(Wall.query.all()) == 17
-    assert len(messages) == 2
-    assert messages[0] == "Uploaded 7 items."
-    assert (
-        messages[1]
-        == "Items: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] not added because they are duplicated or has the wrong format."
-    )
-
-
 def test_upload_holes(app_and_db):
     Wall.upload_walls("test/walls.csv")
+    Wall.upload_holes("test/holes.csv")
     messages = Wall.upload_holes("test/holes.csv")
-    assert len(Hole.query.all()) == 17
-    assert len(messages) == 1
-    assert messages[0] == "Uploaded 17 items."
-
-
-def test_upload_holes_without_walls(app_and_db):
-    Wall.upload_walls("test/walls2.csv")
-    messages = Wall.upload_holes("test/holes.csv")
-    assert len(Hole.query.all()) == 10
-    assert len(messages) == 2
-    assert messages[0] == "Uploaded 10 items."
+    assert len(Hole.query.all()) == 5
+    assert len(messages) == 3
+    assert messages[0] == "Uploaded 5 items."
     assert (
         messages[1]
-        == "Items: [11, 12, 13, 14, 15, 16, 17] not added because wall with specified id does not exist. Add wall first."
+        == "Items: [5, 1, 1, 1] not added because they has the wrong format."
+    )
+    assert (
+        messages[2]
+        == "Items: [6, 7, 12, 13, 14, 15, 16, 17] not added because wall with specified id does not exist. Add wall first."
     )
 
 
-def test_upload_hole_with_wrong_file(app_and_db):
-    pass
-
-
-def test_upload_hole_with_duplicates(app_and_db):
-    pass
+def test_upload_processing(app_and_db):
+    Wall.upload_walls("test/walls.csv")
+    Wall.upload_processing("test/processing.csv")
+    messages = Wall.upload_processing("test/processing.csv")
+    assert len(Processing.query.all()) == 6
+    assert len(messages) == 4
+    assert messages[0] == "Uploaded 6 items."
+    assert (
+        messages[1]
+        == "Items: [1, 1, 1, 2, 2] not added because they has the wrong format."
+    )
+    assert (
+        messages[2]
+        == "Items: [7, 8, 9] not added because wall with specified id does not exist. Add wall first."
+    )
+    assert messages[3] == "Items: [1, 3] not added because value of left_to_sale is 0."
