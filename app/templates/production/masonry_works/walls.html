@@ -32,11 +32,101 @@
           <thead>
             <tr>
               <th class="text-center">Id</th>
-              <th class="text-center">Sector</th>
-              <th class="text-center">Level</th>
-              <th class="text-center">Localization</th>
-              <th class="text-center">Brick Type</th>
-              <th class="text-center">Wall Width</th>
+              <th class="text-center">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Sector
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                <div class="dropdown-menu">
+                    {% for cat in categories.get_category('sector') %}
+                        <a class="dropdown-item" href="{{ url_for('masonry_works.walls',
+                         sector=cat,
+                         level=request.args.get('level'),
+                         localization=request.args.get('localization'),
+                         brick_type=request.args.get('brick_type'),
+                         wall_width=request.args.get('wall_width')
+                         ) }}">{{ cat }}</a>
+                    {% endfor %}
+                </div>
+                </div>
+              </th>
+              <th class="text-center">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Level
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                <div class="dropdown-menu">
+                    {% for cat in categories.get_category('level') %}
+                        <a class="dropdown-item" href="{{ url_for('masonry_works.walls',
+                         sector=request.args.get('sector'),
+                         level=cat,
+                         localization=request.args.get('localization'),
+                         brick_type=request.args.get('brick_type'),
+                         wall_width=request.args.get('wall_width')
+                         ) }}">{{ cat }}</a>
+                    {% endfor %}
+                </div>
+                </div>
+              </th>
+              <th class="text-center">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Localization
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                <div class="dropdown-menu">
+                    {% for cat in categories.get_category('localization') %}
+                        <a class="dropdown-item" href="{{ url_for('masonry_works.walls',
+                         sector=request.args.get('sector'),
+                         level=request.args.get('level'),
+                         localization=cat,
+                         brick_type=request.args.get('brick_type'),
+                         wall_width=request.args.get('wall_width')
+                         ) }}">{{ cat }}</a>
+                    {% endfor %}
+                </div>
+                </div>
+              </th>
+              <th class="text-center">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Brick Type
+                    <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                <div class="dropdown-menu">
+                    {% for cat in categories.get_category('brick_type') %}
+                        <a class="dropdown-item" href="{{ url_for('masonry_works.walls',
+                         sector=request.args.get('sector'),
+                         level=request.args.get('level'),
+                         localization=request.args.get('localization'),
+                         brick_type=cat,
+                         wall_width=request.args.get('wall_width')
+                         ) }}">{{ cat }}</a>
+                    {% endfor %}
+                </div>
+                </div>
+              </th>
+              <th class="text-center">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Wall Width
+                        <span class="sr-only">Toggle Dropdown</span>
+                    </button>
+                <div class="dropdown-menu">
+                    {% for cat in categories.get_category('wall_width') %}
+                        <a class="dropdown-item" href="{{ url_for('masonry_works.walls',
+                         sector=request.args.get('sector'),
+                         level=request.args.get('level'),
+                         localization=request.args.get('localization'),
+                         brick_type=request.args.get('brick_type'),
+                         wall_width=cat
+                         ) }}">{{ cat }}</a>
+                    {% endfor %}
+                </div>
+                </div>
+              </th>
               <th class="text-center">Wall Length</th>
               <th class="text-center">Floor Ordinate</th>
               <th class="text-center">Ceiling Ordinate</th>
@@ -77,8 +167,31 @@
                       </div>
                   </div>
 			  </td>
-		  </tr>
+          </tr>
 		  {% endfor %}
+          {% if total %}
+          <tr>
+              <td class="text-center"></td>
+		      <td class="text-center"></td>
+		      <td class="text-center"></td>
+		      <td class="text-center"></td>
+		      <td class="text-center"></td>
+		      <td class="text-center"></td>
+		      <td class="text-center"></td>
+		      <td class="text-center"></td>
+		      <td class="text-center"></td>
+              <td class="text-center"><b>Total</b></td>
+              <td class="text-center"><b>{{ total.gross_wall_area }} m2</b></td>
+              <td class="text-center"><b>{{ total.wall_area_to_survey }} m2</b></td>
+              <td class="text-center"><b>{{ total.wall_area_to_sale }} m2</b></td>
+              <td class="text-center"><b>{{ total.area_left_to_sale }} m2</b></td>
+          </tr>
+          {% endif %}
+          {% for _ in range(20) %}
+          <tr class="table-light">
+              <td ></td>
+          </tr>
+          {% endfor %}
           </tbody>
         </table>
       </div>

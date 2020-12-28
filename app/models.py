@@ -196,7 +196,7 @@ class Wall(db.Model):
         wall_area_to_sale = self.__compute_gross_wall_area()
         for hole in self.holes:
             if not hole.below_3m2:
-                wall_area_to_sale -= frac(str(hole.total_area)) - frac("1")
+                wall_area_to_sale -= frac(str(hole.total_area)) - frac(str(hole.amount))
         return wall_area_to_sale
 
     def __compute_left_to_sale(self) -> frac:

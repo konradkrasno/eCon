@@ -10,15 +10,35 @@ from app.production.masonry_works.forms import (
     ProcessingForm,
 )
 from app.main.forms import WarrantyForm
+from app.production.masonry_works.data_treatment import TotalAreas, Categories
 
 
 @bp.route("/masonry_works/walls")
 def walls() -> str:
-    items = Wall.get_all_items()
+    sector = request.args.get("sector")
+    level = request.args.get("level")
+    localization = request.args.get("localization")
+    brick_type = request.args.get("brick_type")
+    wall_width = request.args.get("wall_width")
+    items = Wall.query
+    if sector:
+        items = items.filter_by(sector=sector)
+    if level:
+        items = items.filter_by(level=level)
+    if localization:
+        items = items.filter_by(localization=localization)
+    if brick_type:
+        items = items.filter_by(brick_type=brick_type)
+    if wall_width:
+        items = items.filter_by(wall_width=wall_width)
+    items = items.all()
+    total = TotalAreas(items)
     return render_template(
         "production/masonry_works/walls.html",
         title="Walls",
         items=items,
+        total=total,
+        categories=Categories(Wall),
     )
 
 
