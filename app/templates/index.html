@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 
-{% block title_content %}Hi, Konrad{% endblock %}
+{% block title_content %}
+    {% if user.username %}
+    Hi, {{ user.username }}
+    {% endif %}
+{% endblock %}
 {% block app_content %}
     <a class="nav-link" href="#">
       <span data-feather="chevrons-right"></span>

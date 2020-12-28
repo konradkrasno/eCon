@@ -9,27 +9,17 @@ from flask import (
     request,
 )
 from werkzeug.utils import secure_filename
+from flask_login import current_user
 from config import config
 from app.main import bp
-from app.main.forms import LoginForm
 from app.loading_csv import remove_file
-from app.models import Wall
+from app.models import Wall, User
 
 
 @bp.route("/")
 @bp.route("/index")
 def index() -> str:
-    user = {"username": "Konrad"}
-    return render_template("index.html", title="Home", user=user)
-
-
-@bp.route("/login", methods=["GET", "POST"])
-def login() -> str:
-    form = LoginForm()
-    if form.validate_on_submit():
-        flash("{}, you are logged in.".format(form.username.data))
-        return redirect(url_for("main.index"))
-    return render_template("login.html", title="Log In", form=form)
+    return render_template("index.html", title="Home", user=current_user)
 
 
 @bp.route("/tasks")
@@ -60,6 +50,12 @@ def project() -> str:
 @bp.route("/schedule")
 def schedule() -> str:
     return render_template("in_preparation.html", title="Schedule")
+
+
+@bp.route("/user/<string:username>")
+def user(username: str) -> str:
+    user = User.query.filter_by(username=username).first()
+    return render_template("user.html", title="Profile Page", user=user)
 
 
 def allowed_file(filename: str) -> bool:

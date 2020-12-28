@@ -2,7 +2,7 @@ from typing import *
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from fractions import Fraction as frac
-from app import db
+from app import db, login
 from app.validators import (
     check_field_exists,
     validate_walls,
@@ -11,6 +11,8 @@ from app.validators import (
     validate_done_attr_while_adding,
     validate_done_attr_while_editing,
 )
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
 from wtforms.validators import ValidationError
 from app.loading_csv import read_csv_file
 
@@ -22,7 +24,7 @@ investment_associate = db.Table(
 )
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
@@ -36,8 +38,24 @@ class User(db.Model):
         lazy="dynamic",
     )
 
+    def __init__(self, username: str, email: str, password: str):
+        self.username = username
+        self.email = email
+        self.set_password(password)
+
+    def set_password(self, password: str) -> None:
+        self.password_hash = generate_password_hash(password)
+
+    def validate_password(self, password: str) -> bool:
+        return check_password_hash(self.password_hash, password)
+
     def __repr__(self) -> str:
         return "<User(username=%s)>" % (self.username,)
+
+
+@login.user_loader
+def load_user(id: str) -> User:
+    return User.query.get(int(id))
 
 
 class Investment(db.Model):

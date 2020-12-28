@@ -19,7 +19,7 @@ def test_login(client, captured_templates):
     assert response.status_code == 200
     assert len(captured_templates) == 1
     template, context = captured_templates[0]
-    assert template.name == "login.html"
+    assert template.name == "user_form.html"
     assert context["title"] == "Log In"
     assert isinstance(context["form"], LoginForm)
 
