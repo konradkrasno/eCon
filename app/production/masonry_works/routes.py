@@ -1,6 +1,7 @@
 from typing import *
 
 from flask import render_template, flash, redirect, url_for, request
+from flask_login import login_required
 from app.production.masonry_works import bp
 from app.models import Hole, Processing, Wall
 from app.production.masonry_works.forms import (
@@ -14,6 +15,7 @@ from app.production.masonry_works.data_treatment import TotalAreas, Categories
 
 
 @bp.route("/masonry_works/walls")
+@login_required
 def walls() -> str:
     sector = request.args.get("sector")
     level = request.args.get("level")
@@ -43,6 +45,7 @@ def walls() -> str:
 
 
 @bp.route("/masonry_works/holes")
+@login_required
 def holes() -> str:
     wall_id = request.args.get("wall_id")
     items = Hole.get_items_by_wall_id(wall_id)
@@ -55,6 +58,7 @@ def holes() -> str:
 
 
 @bp.route("/masonry_works/processing")
+@login_required
 def processing() -> str:
     wall_id = request.args.get("wall_id")
     items = Processing.get_items_by_wall_id(wall_id)
@@ -69,6 +73,7 @@ def processing() -> str:
 
 
 @bp.route("/masonry_works/modify")
+@login_required
 def modify() -> str:
     wall_id = request.args.get("wall_id")
     item = Wall.query.filter_by(id=wall_id).first()
@@ -78,6 +83,7 @@ def modify() -> str:
 
 
 @bp.route("/masonry_works/add_wall", methods=["GET", "POST"])
+@login_required
 def add_wall() -> str:
     form = AddWallForm()
     if form.validate_on_submit():
@@ -90,6 +96,7 @@ def add_wall() -> str:
 
 
 @bp.route("/masonry_works/add_hole", methods=["GET", "POST"])
+@login_required
 def add_hole() -> str:
     wall_id = request.args.get("wall_id")
     form = HoleForm()
@@ -106,6 +113,7 @@ def add_hole() -> str:
 
 
 @bp.route("/masonry_works/add_processing", methods=["GET", "POST"])
+@login_required
 def add_processing() -> str:
     wall_id = request.args.get("wall_id")
     form = ProcessingForm()
@@ -124,6 +132,7 @@ def add_processing() -> str:
 
 
 @bp.route("/masonry_works/edit_wall", methods=["GET", "POST"])
+@login_required
 def edit_wall() -> str:
     wall_id = request.args.get("wall_id")
     wall = Wall.query.filter_by(id=wall_id).first()
@@ -149,6 +158,7 @@ def edit_wall() -> str:
 
 
 @bp.route("/masonry_works/edit_hole", methods=["GET", "POST"])
+@login_required
 def edit_hole() -> str:
     wall_id = request.args.get("wall_id")
     hole_id = request.args.get("hole_id")
@@ -173,6 +183,7 @@ def edit_hole() -> str:
     "/masonry_works/edit_processing",
     methods=["GET", "POST"],
 )
+@login_required
 def edit_processing() -> str:
     wall_id = request.args.get("wall_id")
     proc_id = request.args.get("proc_id")
@@ -194,6 +205,7 @@ def edit_processing() -> str:
 
 
 @bp.route("/masonry_works/delete_wall", methods=["GET", "POST"])
+@login_required
 def delete_wall() -> str:
     wall_id = request.args.get("wall_id")
     form = WarrantyForm()
@@ -216,6 +228,7 @@ def delete_wall() -> str:
 
 
 @bp.route("/masonry_works/delete_hole", methods=["GET", "POST"])
+@login_required
 def delete_hole() -> str:
     wall_id = request.args.get("wall_id")
     hole_id = request.args.get("hole_id")
@@ -238,6 +251,7 @@ def delete_hole() -> str:
     "/masonry_works/delete_processing",
     methods=["GET", "POST"],
 )
+@login_required
 def delete_processing() -> str:
     wall_id = request.args.get("wall_id")
     proc_id = request.args.get("proc_id")

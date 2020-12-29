@@ -9,7 +9,7 @@ from flask import (
     request,
 )
 from werkzeug.utils import secure_filename
-from flask_login import current_user
+from flask_login import current_user, login_required
 from config import config
 from app.main import bp
 from app.loading_csv import remove_file
@@ -18,41 +18,49 @@ from app.models import Wall, User
 
 @bp.route("/")
 @bp.route("/index")
+@login_required
 def index() -> str:
     return render_template("index.html", title="Home", user=current_user)
 
 
 @bp.route("/tasks")
+@login_required
 def tasks() -> str:
     return render_template("in_preparation.html", title="Tasks")
 
 
 @bp.route("/team")
+@login_required
 def team() -> str:
     return render_template("in_preparation.html", title="Team")
 
 
 @bp.route("/production")
+@login_required
 def production() -> str:
     return render_template("production/production.html", title="Production")
 
 
 @bp.route("/documents")
+@login_required
 def documents() -> str:
     return render_template("in_preparation.html", title="Documents")
 
 
 @bp.route("/project")
+@login_required
 def project() -> str:
     return render_template("in_preparation.html", title="Project")
 
 
 @bp.route("/schedule")
+@login_required
 def schedule() -> str:
     return render_template("in_preparation.html", title="Schedule")
 
 
 @bp.route("/user/<string:username>")
+@login_required
 def user(username: str) -> str:
     user = User.query.filter_by(username=username).first()
     return render_template("user.html", title="Profile Page", user=user)
@@ -66,6 +74,7 @@ def allowed_file(filename: str) -> bool:
 
 
 @bp.route("/upload_file/<string:model>", methods=["GET", "POST"])
+@login_required
 def upload_file(model: str) -> str:
     if request.method == "POST":
         if "file" not in request.files:
@@ -85,6 +94,7 @@ def upload_file(model: str) -> str:
 
 
 @bp.route("/uploads/<string:filename>/<string:model>")
+@login_required
 def uploaded_file(filename: str, model: str) -> str:
     messages = []
     if model == "walls":

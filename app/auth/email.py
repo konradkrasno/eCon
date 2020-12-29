@@ -1,11 +1,17 @@
 from typing import *
 
-from flask import render_template
+from threading import Thread
+from flask import current_app, render_template
 from flask_mail import Message
 from app import mail
 from app.models import User
 from app.auth.token import get_confirmation_token
 from config import config
+
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
 
 
 def send_email(
@@ -14,7 +20,9 @@ def send_email(
     msg = Message(subject=subject, sender=sender, recipients=recipients)
     msg.body = text_body
     msg.html = html_body
-    mail.send(msg)
+    Thread(
+        target=send_async_email, args=(current_app._get_current_object(), msg)
+    ).start()
 
 
 def send_password_reset_confirmation(user: User) -> None:
