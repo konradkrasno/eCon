@@ -15,6 +15,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from wtforms.validators import ValidationError
 from app.loading_csv import read_csv_file
+from config import config
 
 
 investment_associate = db.Table(
@@ -29,6 +30,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
+    is_active = db.Column(db.Boolean())
     investments = db.relationship(
         "Investment",
         secondary=investment_associate,
@@ -42,12 +44,18 @@ class User(UserMixin, db.Model):
         self.username = username
         self.email = email
         self.set_password(password)
+        self.is_active = False
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
 
     def validate_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
+
+    @classmethod
+    def get_user(cls, id: int) -> db.Model:
+        if id:
+            return cls.query.get(id)
 
     def __repr__(self) -> str:
         return "<User(username=%s)>" % (self.username,)

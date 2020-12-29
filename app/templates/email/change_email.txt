@@ -1,0 +1,11 @@
+Dear {{ user.username }},
+
+To change your email address click on the following link:
+
+{{ url_for('auth.activate_email', token=token, _external=True) }}
+
+If you have not changed your email address simply ignore this message.
+
+Sincerely,
+
+The eCon Team

@@ -1,0 +1,11 @@
+Dear {{ user.username }},
+
+To activate your account click on the following link:
+
+{{ url_for('auth.activate_account', token=token, _external=True) }}
+
+If you have not created an account in our platform simply ignore this message.
+
+Sincerely,
+
+The eCon Team

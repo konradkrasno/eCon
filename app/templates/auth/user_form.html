@@ -3,10 +3,20 @@
 
 {% block title_content %}{{ title }}{% endblock %}
 {% block app_content %}
+    {% if title == 'Reset Password' %}
+    <h6>Enter your email address to reset the password:</h6>
+    {% endif %}
+
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}
         </div>
     </div>
+
+    {% if title == 'Log In' %}
+    <p>Forgot your password?
+        <a href="{{ url_for('auth.reset_password_request') }}">Reset Password</a>
+    </p>
+    {% endif %}
 
 {% endblock %}

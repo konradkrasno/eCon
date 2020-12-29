@@ -286,3 +286,18 @@ def test_upload_processing(app_and_db):
         == "Items: [7, 8, 9] not added because wall with specified id does not exist. Add wall first."
     )
     assert messages[3] == "Items: [1, 3] not added because value of left_to_sale is 0."
+
+
+def test_user(app_and_db):
+    db = app_and_db[1]
+    user = User("test_user", "user@gmail.com", "password")
+    assert not user.is_active
+    db.session.add(user)
+    db.session.commit()
+    user = User.query.filter_by(username="test_user").first()
+    assert not user.is_active
+    assert user.id
+
+
+def test_get_user():
+    assert not User.get_user(None)

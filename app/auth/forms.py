@@ -59,3 +59,8 @@ class EditProfileForm(FlaskForm):
         user = User.query.filter_by(email=email.data).first()
         if user and user != current_user:
             raise ValidationError("This email is in use.")
+
+
+class ResetPasswordForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    submit = SubmitField("Reset Password")
