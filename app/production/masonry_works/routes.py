@@ -1,5 +1,3 @@
-from typing import *
-
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_required
 from app.production.masonry_works import bp
@@ -14,7 +12,7 @@ from app.main.forms import WarrantyForm
 from app.production.masonry_works.data_treatment import TotalAreas, Categories
 
 
-@bp.route("/masonry_works/walls")
+@bp.route("/walls")
 @login_required
 def walls() -> str:
     sector = request.args.get("sector")
@@ -44,7 +42,7 @@ def walls() -> str:
     )
 
 
-@bp.route("/masonry_works/holes")
+@bp.route("/holes")
 @login_required
 def holes() -> str:
     wall_id = request.args.get("wall_id")
@@ -57,7 +55,7 @@ def holes() -> str:
     )
 
 
-@bp.route("/masonry_works/processing")
+@bp.route("/processing")
 @login_required
 def processing() -> str:
     wall_id = request.args.get("wall_id")
@@ -72,7 +70,7 @@ def processing() -> str:
     )
 
 
-@bp.route("/masonry_works/modify")
+@bp.route("/modify")
 @login_required
 def modify() -> str:
     wall_id = request.args.get("wall_id")
@@ -82,7 +80,7 @@ def modify() -> str:
     )
 
 
-@bp.route("/masonry_works/add_wall", methods=["GET", "POST"])
+@bp.route("/add_wall", methods=["GET", "POST"])
 @login_required
 def add_wall() -> str:
     form = AddWallForm()
@@ -95,7 +93,7 @@ def add_wall() -> str:
     )
 
 
-@bp.route("/masonry_works/add_hole", methods=["GET", "POST"])
+@bp.route("/add_hole", methods=["GET", "POST"])
 @login_required
 def add_hole() -> str:
     wall_id = request.args.get("wall_id")
@@ -112,7 +110,7 @@ def add_hole() -> str:
     )
 
 
-@bp.route("/masonry_works/add_processing", methods=["GET", "POST"])
+@bp.route("/add_processing", methods=["GET", "POST"])
 @login_required
 def add_processing() -> str:
     wall_id = request.args.get("wall_id")
@@ -131,7 +129,7 @@ def add_processing() -> str:
     )
 
 
-@bp.route("/masonry_works/edit_wall", methods=["GET", "POST"])
+@bp.route("/edit_wall", methods=["GET", "POST"])
 @login_required
 def edit_wall() -> str:
     wall_id = request.args.get("wall_id")
@@ -157,7 +155,7 @@ def edit_wall() -> str:
     )
 
 
-@bp.route("/masonry_works/edit_hole", methods=["GET", "POST"])
+@bp.route("/edit_hole", methods=["GET", "POST"])
 @login_required
 def edit_hole() -> str:
     wall_id = request.args.get("wall_id")
@@ -180,7 +178,7 @@ def edit_hole() -> str:
 
 
 @bp.route(
-    "/masonry_works/edit_processing",
+    "/edit_processing",
     methods=["GET", "POST"],
 )
 @login_required
@@ -204,7 +202,7 @@ def edit_processing() -> str:
     )
 
 
-@bp.route("/masonry_works/delete_wall", methods=["GET", "POST"])
+@bp.route("/delete_wall", methods=["GET", "POST"])
 @login_required
 def delete_wall() -> str:
     wall_id = request.args.get("wall_id")
@@ -227,7 +225,7 @@ def delete_wall() -> str:
     )
 
 
-@bp.route("/masonry_works/delete_hole", methods=["GET", "POST"])
+@bp.route("/delete_hole", methods=["GET", "POST"])
 @login_required
 def delete_hole() -> str:
     wall_id = request.args.get("wall_id")
@@ -248,7 +246,7 @@ def delete_hole() -> str:
 
 
 @bp.route(
-    "/masonry_works/delete_processing",
+    "/delete_processing",
     methods=["GET", "POST"],
 )
 @login_required

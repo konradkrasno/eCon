@@ -1,5 +1,3 @@
-from typing import *
-
 import os
 from flask import (
     render_template,
@@ -27,12 +25,6 @@ def index() -> str:
 @login_required
 def tasks() -> str:
     return render_template("in_preparation.html", title="Tasks")
-
-
-@bp.route("/team")
-@login_required
-def team() -> str:
-    return render_template("in_preparation.html", title="Team")
 
 
 @bp.route("/production")

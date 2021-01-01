@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title_content %}Investments{% endblock %}
+{% block button_content %}
+
+<div class="btn-toolbar mb-2 mb-md-0">
+    <div class="container">
+        {% if g.current_invest.name %}
+        <h6>Current Investment: {{ g.current_invest.name }}</h6>
+        <br>
+        {% endif %}
+    </div>
+    <div class="btn-group mr-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ url_for('investments.create') }}">Create new investment</a>
+        </button>
+    </div>
+</div>
+
+{% endblock %}
+{% block app_content %}
+
+<main>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th class="text-center">Investment</th>
+          <th class="text-center"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for investment in investments %}
+      <tr>
+          <td class="text-center">{{ investment.name }}</td>
+          <td class="text-center">
+              <div class="btn-toolbar mb-2 mb-md-0">
+                  <div class="btn-group mr-1">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">
+                          <a href="{{ url_for('investments.info', _id=investment.id) }}">Info</a>
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">
+                          <a href="{{ url_for('investments.choose', _id=investment.id) }}">Choose</a>
+                      </button>
+                  </div>
+              </div>
+          </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</main>
+
+{% endblock %}

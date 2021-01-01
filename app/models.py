@@ -15,14 +15,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from wtforms.validators import ValidationError
 from app.loading_csv import read_csv_file
-from config import config
-
-
-investment_associate = db.Table(
-    "investment_associate",
-    db.Column("investment_id", db.Integer, db.ForeignKey("investment.id")),
-    db.Column("user_id", db.Integer, db.ForeignKey("user.id")),
-)
 
 
 class User(UserMixin, db.Model):
@@ -31,13 +23,13 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
     is_active = db.Column(db.Boolean())
-    investments = db.relationship(
-        "Investment",
-        secondary=investment_associate,
-        primaryjoin=(investment_associate.c.investment_id == id),
-        secondaryjoin=(investment_associate.c.user_id == id),
-        backref=db.backref("investment_associate", lazy="dynamic"),
+    current_invest_id = db.Column(db.Integer())
+    workers = db.relationship(
+        "Worker",
+        backref="user",
         lazy="dynamic",
+        cascade="all, delete",
+        passive_deletes=True,
     )
 
     def __init__(self, username: str, email: str, password: str):
@@ -66,18 +58,78 @@ def load_user(id: str) -> User:
     return User.query.get(int(id))
 
 
+class Worker(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    position = db.Column(db.String(128))
+    admin = db.Column(db.Boolean())
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
+    investment_id = db.Column(
+        db.Integer, db.ForeignKey("investment.id", ondelete="CASCADE")
+    )
+
+    @classmethod
+    def belongs_to_investment(cls, email: str, investment_id: int) -> bool:
+        return (
+            cls.query.filter_by(investment_id=investment_id)
+            .join(User, User.id == Worker.user_id)
+            .filter_by(email=email)
+            .first()
+            is not None
+        )
+
+    @classmethod
+    def is_admin(cls, user_id: int, investment_id: int) -> bool:
+        worker = cls.query.filter_by(
+            investment_id=investment_id, user_id=user_id
+        ).first()
+        if worker:
+            return worker.admin
+        return False
+
+    @classmethod
+    def get_team(cls, investment_id: int) -> List:
+        return cls.query.filter_by(investment_id=investment_id).order_by("id").all()
+
+
 class Investment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True, unique=True)
+    description = db.Column(db.Text())
     workers = db.relationship(
-        "User",
-        secondary=investment_associate,
-        primaryjoin=(investment_associate.c.investment_id == id),
-        secondaryjoin=(investment_associate.c.user_id == id),
-        backref=db.backref("investment_associate", lazy="dynamic"),
+        "Worker",
+        backref="investment",
         lazy="dynamic",
+        cascade="all, delete",
+        passive_deletes=True,
     )
     # masonry_registry = db.relationship("Wall", backref="investment", lazy="dynamic")
+
+    @classmethod
+    def get_by_user_id(cls, user_id: int) -> db.Model:
+        return (
+            cls.query.join(Worker, Worker.investment_id == Investment.id)
+            .order_by("name")
+            .filter_by(user_id=user_id)
+            .all()
+        )
+
+    @classmethod
+    def get_current_invest(cls, user: User) -> db.Model:
+        investment = (
+            Investment.query.join(Worker, Worker.investment_id == Investment.id)
+            .filter_by(user_id=user.id, investment_id=user.current_invest_id)
+            .first()
+        )
+        if investment:
+            return investment
+        return Investment()
+
+    def get_num_of_admins(self) -> int:
+        num_of_admins = 0
+        for worker in self.workers:
+            if worker.admin:
+                num_of_admins += 1
+        return num_of_admins
 
     def __repr__(self) -> str:
         return "<Investment(name=%s)>" % (self.name,)
@@ -317,24 +369,18 @@ class Wall(db.Model):
 
     @classmethod
     def delete_wall(cls, wall_id: int) -> None:
-        wall = Wall.query.filter_by(id=wall_id).first()
-        if wall:
-            db.session.delete(wall)
-            db.session.commit()
+        cls.query.filter_by(id=wall_id).delete()
+        db.session.commit()
 
-    @classmethod
-    def delete_hole(cls, model_id: int) -> None:
-        hole = Hole.query.filter_by(id=model_id).first()
-        if hole:
-            db.session.delete(hole)
-            db.session.commit()
+    @staticmethod
+    def delete_hole(model_id: int) -> None:
+        Hole.query.filter_by(id=model_id).delete()
+        db.session.commit()
 
-    @classmethod
-    def delete_processing(cls, model_id: int) -> None:
-        processing = Processing.query.filter_by(id=model_id).first()
-        if processing:
-            db.session.delete(processing)
-            db.session.commit()
+    @staticmethod
+    def delete_processing(model_id: int) -> None:
+        Processing.query.filter_by(id=model_id).delete()
+        db.session.commit()
 
     @classmethod
     def upload_walls(cls, filename: str) -> List:

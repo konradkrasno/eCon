@@ -52,6 +52,17 @@
     </li>
   </ul>
   {% else %}
+  {% if g.current_invest %}
+  <ul class="navbar-nav px-3">
+    <li class="nav-item text-nowrap">
+      {% if g.current_invest.name %}
+      <a class="nav-link" href="">Investment: {{ g.current_invest.name }}</a>
+      {% else %}
+      <a class="nav-link" href="">Investment: Not Selected</a>
+      {% endif %}
+    </li>
+  </ul>
+  {% endif %}
   <ul class="navbar-nav px-3">
     <li class="nav-item text-nowrap">
       <a class="nav-link" href="{{ url_for('main.user', username=current_user.username) }}">Profile</a>
@@ -77,13 +88,19 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('investments.invest_list') }}">
+              <span data-feather="briefcase"></span>
+              Investments
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{{ url_for('main.tasks') }}">
               <span data-feather="file-text"></span>
               Tasks
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('main.team') }}">
+            <a class="nav-link" href="{{ url_for('team.team') }}">
               <span data-feather="users"></span>
               Team
             </a>
@@ -108,7 +125,7 @@
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('main.schedule') }}">
-              <span data-feather="list"></span>
+              <span data-feather="invest_list"></span>
               Schedule
             </a>
           </li>

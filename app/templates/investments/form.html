@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block title_content %}Investments{% endblock %}
+{% block app_content %}
+    {% if title == 'Create Investment' %}
+    <h5>Create new investment:</h5>
+    {% endif %}
+    {% if title == 'Edit Investment' %}
+    <h5>Edit investment:</h5>
+    {% endif %}
+    <br>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+{% endblock %}

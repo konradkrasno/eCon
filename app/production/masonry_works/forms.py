@@ -21,9 +21,9 @@ class AddWallForm(FlaskForm):
     ceiling_ord = FloatField("Ceiling Ordinate", validators=[InputRequired()])
     submit = SubmitField("Submit")
 
-    def validate_id(self, field):
+    def validate_id(self, _id):
         ids = [wall.id for wall in Wall.query.all()]
-        if field.data in ids:
+        if _id.data in ids:
             raise ValidationError("Id must be unique!")
 
 
@@ -52,6 +52,6 @@ class ProcessingForm(FlaskForm):
     done = FloatField("Done", validators=[InputRequired()])
     submit = SubmitField("Submit")
 
-    def validate_done(self, field):
-        if field.data < 0:
+    def validate_done(self, done):
+        if done.data < 0:
             raise ValidationError("Done value must be greater than 0!")

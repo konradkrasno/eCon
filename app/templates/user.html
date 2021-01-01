@@ -5,11 +5,21 @@
     {% if user %}
     <h6>Username: {{ user.username }}</h6>
     <h6>Email: {{ user.email }}</h6>
-    {% if user == current_user %}
-    <h6><a href="{{ url_for('auth.edit_profile') }}">Edit profile</a></h6>
-    <h6><a href="{{ url_for('auth.change_password') }}">Change password</a></h6>
-    {% endif %}
+        {% if user != current_user %}
+            {% if user.is_active %}
+            <h6>User is active</h6>
+            {% else %}
+            <h6>User not active</h6>
+            {% endif %}
+        {% endif %}
     {% else %}
     <h6>No such user in the database.</h6>
     {% endif %}
+    <br>
+    {% if user == current_user %}
+    <h6><a href="{{ url_for('auth.edit_profile') }}">Edit profile</a></h6>
+    <h6><a href="{{ url_for('auth.change_password') }}">Change password</a></h6>
+    <h6><a href="{{ url_for('auth.delete_account', username=user.username) }}">Delete account</a></h6>
+    {% endif %}
+
 {% endblock %}

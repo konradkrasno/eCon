@@ -1,5 +1,3 @@
-from typing import *
-
 from sqlalchemy.exc import IntegrityError
 from werkzeug.urls import url_parse
 from flask import (
@@ -18,7 +16,9 @@ from app.auth.forms import (
     EditProfileForm,
     ChangePasswordForm,
     ResetPasswordForm,
+    CompleteRegistrationForm,
 )
+from app.main.forms import WarrantyForm
 from app.models import User
 from app.auth.token import verify_token
 from app.auth.email import (
@@ -94,7 +94,9 @@ def activate_account(token: bytes) -> str:
 @bp.route("/edit", methods=["GET", "POST"])
 @login_required
 def edit_profile() -> str:
-    form = EditProfileForm(username=current_user.username, email=current_user.email)
+    form = EditProfileForm(
+        original_username=current_user.username, original_email=current_user.email
+    )
     if form.validate_on_submit():
         user = User.query.filter_by(username=current_user.username).first()
         if user:
@@ -105,6 +107,9 @@ def edit_profile() -> str:
             db.session.commit()
             flash("You change your profile data.")
             return redirect(url_for("main.user", username=current_user.username))
+    elif request.method == "GET":
+        form.username.data = current_user.username
+        form.email.data = current_user.email
     return render_template("auth/user_form.html", title="Edit Profile", form=form)
 
 
@@ -158,8 +163,9 @@ def reset_password_request() -> str:
     return render_template("auth/user_form.html", title="Reset Password", form=form)
 
 
-@bp.route("/reset_password/<token>", methods=["GET", "POST"])
-def reset_password(token: bytes) -> str:
+@bp.route("/reset_password", methods=["GET", "POST"])
+def reset_password() -> str:
+    token = request.args.get("token")
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
     _id = verify_token(token).get("id", None)
@@ -173,3 +179,42 @@ def reset_password(token: bytes) -> str:
         flash("Your password has benn reset.")
         return redirect(url_for("auth.login"))
     return render_template("auth/user_form.html", title="Change Password", form=form)
+
+
+@bp.route("/complete_registration", methods=["GET", "POST"])
+def complete_registration() -> str:
+    token = request.args.get("token")
+    if current_user.is_authenticated:
+        return redirect(url_for("main.index"))
+    _id = verify_token(token).get("id", None)
+    user = User.get_user(_id)
+    if not user:
+        return redirect(url_for("main.index"))
+    form = CompleteRegistrationForm()
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.set_password(form.password.data)
+        user.is_active = True
+        db.session.commit()
+        flash("You have successfully complete the registration.")
+        return redirect(url_for("auth.login"))
+    return render_template(
+        "auth/user_form.html", title="Complete Registration", form=form
+    )
+
+
+@bp.route("/delete_account", methods=["GET", "POST"])
+@login_required
+def delete_account():
+    username = request.args.get("username")
+    form = WarrantyForm()
+    if form.validate_on_submit():
+        if form.no.data:
+            return redirect(url_for("main.user", username=username))
+        elif form.yes.data:
+            # TODO add checking if user id only admin in any investment
+            User.query.filter_by(username=username).delete()
+            db.session.commit()
+            flash("Your account has been deleted.")
+            return redirect(url_for("main.index"))
+    return render_template("warranty_form.html", title="Delete Account", form=form)

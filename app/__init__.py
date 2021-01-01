@@ -32,9 +32,17 @@ def create_app(app_config=config):
 
     app.register_blueprint(main_bp)
 
+    from app.investments import bp as investments_bp
+
+    app.register_blueprint(investments_bp, url_prefix="/investments")
+
+    from app.team import bp as team_bp
+
+    app.register_blueprint(team_bp, url_prefix="/team")
+
     from app.production.masonry_works import bp as masonry_works_bp
 
-    app.register_blueprint(masonry_works_bp)
+    app.register_blueprint(masonry_works_bp, url_prefix="/masonry_works")
 
     return app
 

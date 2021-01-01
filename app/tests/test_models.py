@@ -1,6 +1,6 @@
 import pytest
 
-from app.models import User, Investment, Hole, Processing, Wall
+from app.models import Hole, Processing, Wall, User, Investment, Worker
 
 
 def test_create_item_when_wrong_attribute(wall_data):
@@ -299,5 +299,60 @@ def test_user(app_and_db):
     assert user.id
 
 
-def test_get_user():
-    assert not User.get_user(None)
+def test_investment(app_and_db, add_user):
+    db = app_and_db[1]
+
+    investment = Investment(name="Test Investment")
+    user = User.query.filter_by(username="test_user").first()
+    worker = Worker(position="test position", user_id=user.id)
+    investment.workers.append(worker)
+    db.session.add(investment)
+    db.session.commit()
+
+    user = User.query.filter_by(username="test_user").first()
+    worker = Worker.query.filter_by(position="test position").first()
+    investment = Investment.query.filter_by(name="Test Investment").first()
+
+    assert user.workers.first() == worker
+    assert investment.workers.first() == worker
+    assert worker.user_id == user.id
+    assert worker.investment_id == investment.id
+
+
+# def test_get_investment_by_user(app_and_db, add_user):
+#     db = app_and_db[1]
+#     investment = Investment(name="test")
+#     user = User.query.filter_by(username="test_user").first()
+#     worker = Worker(position="test worker", user_id=user.id)
+#     investment.workers.append(worker)
+#     db.session.add(investment)
+#     db.session.commit()
+#     assert Investment.get_by_user(id=1)
+#     assert Investment.get_by_user(email = "test@email.com")
+#
+#
+# def test_get_investment_by_user_when_no_user(app_and_db):
+#     assert not Investment.get_by_user(id=1)
+
+
+def test_get_current_invest(app_and_db, add_user):
+    db = app_and_db[1]
+
+    investment = Investment(name="Test Investment")
+    user = User.query.filter_by(username="test_user").first()
+    user.current_invest_id = 1
+    worker = Worker(position="test position", user_id=user.id)
+    investment.workers.append(worker)
+    db.session.add(investment)
+    db.session.commit()
+
+    user = User.query.filter_by(username="test_user").first()
+    current_invest = Investment.get_current_invest(user)
+    print(type(current_invest))
+    assert current_invest.name == "Test Investment"
+
+
+def test_get_current_invest_when_no_investment(app_and_db, add_user):
+    user = User.query.filter_by(username="test_user").first()
+    current_invest = Investment.get_current_invest(user)
+    assert current_invest.name == None

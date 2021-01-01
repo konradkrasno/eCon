@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from flask import template_rendered
 from app import create_app, db
 from config import config
-from app.models import Wall
+from app.models import Wall, User
 
 
 def assert_flashes(client, expected_message, expected_category="message"):
@@ -79,3 +79,11 @@ def wall_data() -> Dict:
 @pytest.fixture
 def add_wall(app_and_db, wall_data):
     Wall.add_wall(**wall_data)
+
+
+@pytest.fixture
+def add_user(app_and_db):
+    user = User(username="test_user", email="test@email.com", password="password")
+    user.is_active = True
+    db.session.add(user)
+    db.session.commit()

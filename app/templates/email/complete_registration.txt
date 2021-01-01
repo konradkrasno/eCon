@@ -1,0 +1,10 @@
+Dear Sir/Madam,
+
+This is an invitation to cooperate with project in our platform.
+To complete the registration click on the following link:
+
+{{ url_for('auth.complete_registration', token=token, _external=True) }}
+
+Sincerely,
+
+The eCon Team

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title_content %}Team{% endblock %}
+
+{% block button_content %}
+
+    <div class="btn-toolbar mb-2 mb-md-0">
+      {% if g.current_invest.name %}
+        <div class="btn-group mr-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+              <a href="#">My Worker Profile</a>
+            </button>
+            {% if admin %}
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+              <a href="{{ url_for('team.add_worker') }}">Add Worker</a>
+            </button>
+            {% endif %}
+        </div>
+      {% else %}
+        <div class="container">
+          <h6>No Investment selected.</h6><br>
+        </div>
+        <div class="btn-group mr-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+              <a href="{{ url_for('investments.invest_list') }}">Select Investment</a>
+            </button>
+        </div>
+      {% endif %}
+    </div>
+
+{% endblock %}
+{% block app_content %}
+
+<main>
+  <div class="table-responsive">
+    {% if g.current_invest.name %}
+        {% if team %}
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th class="text-center">Name</th>
+              <th class="text-center">Position</th>
+              <th class="text-center">Admin</th>
+              <th class="text-center"></th>
+            </tr>
+          </thead>
+          <tbody>
+        {% for worker in team %}
+          <tr>
+              <td class="text-center">
+                  <a href="{{ url_for('main.user', username=worker.user.username) }}" >
+                      {{ worker.user.username }}
+                  </a>
+              </td>
+              <td class="text-center">{{ worker.position }}</td>
+              <td class="text-center">{{ worker.admin }}</td>
+              <td class="text-center">
+                  {% if admin %}
+                  <div class="btn-toolbar mb-2 mb-md-0">
+                      <div class="btn-group mr-1">
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
+                              <a href="{{ url_for('team.edit_worker', _id=worker.id) }}">Edit</a>
+                          </button>
+                          {% if worker.user_id != current_user.id %}
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
+                              <a href="{{ url_for('team.delete_worker', _id=worker.id) }}">Delete</a>
+                          </button>
+                          {% endif %}
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
+                              <a href="{{ url_for('team.change_root_permission', _id=worker.id) }}">Change Root Permission</a>
+                          </button>
+                      </div>
+                  </div>
+                  {% endif %}
+              </td>
+          </tr>
+        {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No worker added yet.</p>
+      {% endif %}
+  {% endif %}
+  </div>
+
+</main>
+
+{% endblock %}

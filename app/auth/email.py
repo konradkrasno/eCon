@@ -58,3 +58,18 @@ def send_change_email_confirmation(email: str, user: User) -> None:
         text_body=render_template("email/change_email.txt", user=user, token=token),
         html_body=render_template("email/change_email.html", user=user, token=token),
     )
+
+
+def send_complete_registration_mail(user: User) -> None:
+    token = get_confirmation_token(id=user.id)
+    send_email(
+        "eCon - Complete Registration",
+        sender=config["MAIL_DEFAULT_SENDER"],
+        recipients=[user.email],
+        text_body=render_template(
+            "email/complete_registration.txt", user=user, token=token
+        ),
+        html_body=render_template(
+            "email/complete_registration.html", user=user, token=token
+        ),
+    )

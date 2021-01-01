@@ -5,7 +5,6 @@ from wtforms import (
     BooleanField,
     SubmitField,
 )
-from flask_login import current_user
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from app.models import User
 
@@ -50,17 +49,38 @@ class EditProfileForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     submit = SubmitField("Submit")
 
+    def __init__(self, original_username: str, original_email: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_username = original_username
+        self.original_email = original_email
+
     def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
-        if user and user != current_user:
-            raise ValidationError("This username is in use.")
+        if username.data != self.original_username:
+            user = User.query.filter_by(username=username.data).first()
+            if user:
+                raise ValidationError("This username is in use.")
 
     def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
-        if user and user != current_user:
-            raise ValidationError("This email is in use.")
+        if email.data != self.original_email:
+            user = User.query.filter_by(email=email.data).first()
+            if user:
+                raise ValidationError("This email is in use.")
 
 
 class ResetPasswordForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     submit = SubmitField("Reset Password")
+
+
+class CompleteRegistrationForm(FlaskForm):
+    username = StringField("Username", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    password2 = PasswordField(
+        "Repeat Password", validators=[DataRequired(), EqualTo("password")]
+    )
+    submit = SubmitField("Submit")
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError("This username is in use.")

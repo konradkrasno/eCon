@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title_content %}Investment Info{% endblock %}
+{% block button_content %}
+
+<div class="btn-toolbar mb-2 mb-md-0">
+  <div class="btn-group mr-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary">
+      <a href="{{ url_for('investments.invest_list') }}">Back</a>
+    </button>
+    {% if admin %}
+    <button type="button" class="btn btn-sm btn-outline-secondary">
+      <a href="{{ url_for('investments.edit', _id=investment.id) }}">Edit</a>
+    </button>
+    <button type="button" class="btn btn-sm btn-outline-secondary">
+      <a href="{{ url_for('investments.delete', _id=investment.id) }}">Delete</a>
+    </button>
+    {% endif %}
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block app_content %}
+    <h6>{{ investment.name }}</h6><br>
+    <p>{{ investment.description }}</p>
+{% endblock %}

@@ -1,0 +1,12 @@
+<p>Dear Sir/Madam,</p>
+<p> This is an invitation to cooperate with project in our platform.
+<p>
+    To complete the registration
+    <a href="{{ url_for('auth.complete_registration', token=token, _external=True) }}">
+        click here
+    </a>.
+</p>
+<p>Alternatively, you can paste the following link in your browser's address bar:</p>
+<p>{{ url_for('auth.complete_registration', token=token, _external=True) }}</p>
+<p>Sincerely,</p>
+<p>The eCon Team</p>
