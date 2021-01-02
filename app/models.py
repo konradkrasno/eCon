@@ -1,5 +1,6 @@
 from typing import *
 
+from datetime import datetime
 from sqlalchemy.ext.hybrid import hybrid_property
 from fractions import Fraction as frac
 from app import db, login
@@ -131,8 +132,9 @@ class Investment(db.Model):
     __tablename__ = "investments"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), index=True, unique=True)
+    name = db.Column(db.String(128))
     description = db.Column(db.Text())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow())
     workers = db.relationship(
         "Worker",
         backref="investments",
@@ -146,7 +148,7 @@ class Investment(db.Model):
     def get_by_user_id(cls, user_id: int) -> db.Model:
         return (
             cls.query.join(Worker, Worker.investment_id == Investment.id)
-            .order_by("name")
+            .order_by(cls.created_at.desc())
             .filter_by(user_id=user_id)
             .all()
         )

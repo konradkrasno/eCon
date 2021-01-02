@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import render_template, redirect, url_for, flash, request, g
 from flask_login import login_required, current_user
 from app import db
@@ -30,7 +31,11 @@ def invest_list() -> str:
 def create() -> str:
     form = InvestmentForm()
     if form.validate_on_submit():
-        investment = Investment(name=form.name.data, description=form.description.data)
+        investment = Investment(
+            name=form.name.data,
+            description=form.description.data,
+            created_at=datetime.utcnow(),
+        )
         worker = Worker(
             position="admin",
             admin=True,
@@ -72,7 +77,7 @@ def edit() -> str:
         return redirect(url_for("investments.info", _id=_id))
     investment = Investment.query.filter_by(id=_id).first()
     if investment:
-        form = InvestmentForm(original_name=investment.name)
+        form = InvestmentForm()
         if form.validate_on_submit():
             investment.name = form.name.data
             investment.description = form.description.data
