@@ -22,6 +22,7 @@
 
 <main>
   <div class="table-responsive">
+  {% if investments %}
     <table class="table table-striped">
       <thead>
         <tr>
@@ -49,6 +50,9 @@
       {% endfor %}
       </tbody>
     </table>
+  {% else %}
+  <p>No investment added yet.</p>
+  {% endif %}
   </div>
 </main>
 

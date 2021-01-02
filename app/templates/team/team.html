@@ -48,8 +48,8 @@
         {% for worker in team %}
           <tr>
               <td class="text-center">
-                  <a href="{{ url_for('main.user', username=worker.user.username) }}" >
-                      {{ worker.user.username }}
+                  <a href="{{ url_for('main.user', username=worker.users.username) }}" >
+                      {{ worker.users.username }}
                   </a>
               </td>
               <td class="text-center">{{ worker.position }}</td>

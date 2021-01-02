@@ -288,71 +288,210 @@ def test_upload_processing(app_and_db):
     assert messages[3] == "Items: [1, 3] not added because value of left_to_sale is 0."
 
 
-def test_user(app_and_db):
-    db = app_and_db[1]
-    user = User("test_user", "user@gmail.com", "password")
-    assert not user.is_active
-    db.session.add(user)
-    db.session.commit()
-    user = User.query.filter_by(username="test_user").first()
-    assert not user.is_active
-    assert user.id
+class TestInvestment:
+    @staticmethod
+    def test_investment(app_and_db, add_user):
+        db = app_and_db[1]
+
+        investment = Investment(name="Test Investment")
+        user = User.query.filter_by(username="test_user").first()
+        worker = Worker(position="test position", user_id=user.id)
+        investment.workers.append(worker)
+        db.session.add(investment)
+        db.session.commit()
+
+        user = User.query.filter_by(username="test_user").first()
+        worker = Worker.query.filter_by(position="test position").first()
+        investment = Investment.query.filter_by(name="Test Investment").first()
+
+        assert user.workers.first() == worker
+        assert investment.workers.first() == worker
+        assert worker.user_id == user.id
+        assert worker.investment_id == investment.id
+
+    # def test_get_investment_by_user(app_and_db, add_user):
+    #     db = app_and_db[1]
+    #     investment = Investment(name="test")
+    #     user = User.query.filter_by(username="test_user").first()
+    #     worker = Worker(position="test worker", user_id=user.id)
+    #     investment.workers.append(worker)
+    #     db.session.add(investment)
+    #     db.session.commit()
+    #     assert Investment.get_by_user(id=1)
+    #     assert Investment.get_by_user(email = "test@email.com")
+    #
+    #
+    # def test_get_investment_by_user_when_no_user(app_and_db):
+    #     assert not Investment.get_by_user(id=1)
+
+    @staticmethod
+    def test_get_num_of_admins(app_and_db):
+        db = app_and_db[1]
+        for i in range(1, 4):
+            user = User(
+                username="user_{}".format(i),
+                email="user_{}@mail.com".format(i),
+                password="password",
+            )
+            user.is_active = True
+            db.session.add(user)
+        investment = Investment(name="test invest")
+        db.session.add(investment)
+        db.session.commit()
+
+        user1 = User.get_user(1)
+        user2 = User.get_user(2)
+        user3 = User.get_user(3)
+        invest = Investment.query.filter_by(id=1).first()
+        worker1 = Worker(position="pos1", admin=True, user_id=user1.id)
+        worker2 = Worker(position="pos2", admin=False, user_id=user2.id)
+        worker3 = Worker(position="pos3", admin=True, user_id=user3.id)
+        invest.workers.append(worker1)
+        invest.workers.append(worker2)
+        invest.workers.append(worker3)
+        db.session.commit()
+
+        assert Investment.get_num_of_admins(investment_id=1) == 2
+
+    @staticmethod
+    def test_get_current_invest(app_and_db, add_user):
+        db = app_and_db[1]
+
+        investment = Investment(name="Test Investment")
+        user = User.query.filter_by(username="test_user").first()
+        user.current_invest_id = 1
+        worker = Worker(position="test position", user_id=user.id)
+        investment.workers.append(worker)
+        db.session.add(investment)
+        db.session.commit()
+
+        user = User.query.filter_by(username="test_user").first()
+        current_invest = Investment.get_current_invest(user)
+        print(type(current_invest))
+        assert current_invest.name == "Test Investment"
+
+    @staticmethod
+    def test_get_current_invest_when_no_investment(app_and_db, add_user):
+        user = User.query.filter_by(username="test_user").first()
+        current_invest = Investment.get_current_invest(user)
+        assert current_invest.name == None
 
 
-def test_investment(app_and_db, add_user):
-    db = app_and_db[1]
+class TestUser:
+    @staticmethod
+    def test_user(app_and_db):
+        db = app_and_db[1]
+        user = User("test_user", "user@gmail.com", "password")
+        assert not user.is_active
+        db.session.add(user)
+        db.session.commit()
+        user = User.query.filter_by(username="test_user").first()
+        assert not user.is_active
+        assert user.id
 
-    investment = Investment(name="Test Investment")
-    user = User.query.filter_by(username="test_user").first()
-    worker = Worker(position="test position", user_id=user.id)
-    investment.workers.append(worker)
-    db.session.add(investment)
-    db.session.commit()
+    @staticmethod
+    def test_get_investment(app_and_db, add_user):
+        db = app_and_db[1]
+        user = User.get_user(1)
+        db.session.add(Investment(name="test invest 1"))
+        db.session.add(Investment(name="test invest 2"))
+        db.session.commit()
 
-    user = User.query.filter_by(username="test_user").first()
-    worker = Worker.query.filter_by(position="test position").first()
-    investment = Investment.query.filter_by(name="Test Investment").first()
+        invest1 = Investment.query.filter_by(id=1).first()
+        invest1.workers.append(Worker(user_id=user.id))
+        invest2 = Investment.query.filter_by(id=2).first()
+        invest2.workers.append(Worker(user_id=user.id))
+        db.session.commit()
 
-    assert user.workers.first() == worker
-    assert investment.workers.first() == worker
-    assert worker.user_id == user.id
-    assert worker.investment_id == investment.id
+        assert User.get_investments(user_id=1) == [invest1, invest2]
 
+    @staticmethod
+    def test_get_investment_when_no_investments(app_and_db):
+        assert type(User.get_investments(1)) == list
 
-# def test_get_investment_by_user(app_and_db, add_user):
-#     db = app_and_db[1]
-#     investment = Investment(name="test")
-#     user = User.query.filter_by(username="test_user").first()
-#     worker = Worker(position="test worker", user_id=user.id)
-#     investment.workers.append(worker)
-#     db.session.add(investment)
-#     db.session.commit()
-#     assert Investment.get_by_user(id=1)
-#     assert Investment.get_by_user(email = "test@email.com")
-#
-#
-# def test_get_investment_by_user_when_no_user(app_and_db):
-#     assert not Investment.get_by_user(id=1)
+    @staticmethod
+    def test_check_admins(app_and_db):
+        db = app_and_db[1]
 
+        for i in range(1, 5):
+            user = User(
+                username="user_{}".format(i),
+                email="user_{}@mail.com".format(i),
+                password="password",
+            )
+            user.is_active = True
+            db.session.add(user)
+            investment = Investment(name="test invest {}".format(i))
+            db.session.add(investment)
+            db.session.commit()
 
-def test_get_current_invest(app_and_db, add_user):
-    db = app_and_db[1]
+        user1 = Investment.query.filter_by(id=1).first()
+        user2 = Investment.query.filter_by(id=2).first()
+        user3 = Investment.query.filter_by(id=3).first()
 
-    investment = Investment(name="Test Investment")
-    user = User.query.filter_by(username="test_user").first()
-    user.current_invest_id = 1
-    worker = Worker(position="test position", user_id=user.id)
-    investment.workers.append(worker)
-    db.session.add(investment)
-    db.session.commit()
+        # one user -> not add to list
+        invest1 = Investment.query.filter_by(id=1).first()
+        worker1 = Worker(position="pos1", admin=True, user_id=user1.id)
+        invest1.workers.append(worker1)
 
-    user = User.query.filter_by(username="test_user").first()
-    current_invest = Investment.get_current_invest(user)
-    print(type(current_invest))
-    assert current_invest.name == "Test Investment"
+        # two users, one admin, user1 is admin -> add to list
+        invest2 = Investment.query.filter_by(id=2).first()
+        worker1 = Worker(position="pos1", admin=True, user_id=user1.id)
+        worker2 = Worker(position="pos2", admin=False, user_id=user2.id)
+        invest2.workers.append(worker1)
+        invest2.workers.append(worker2)
 
+        # two users, user1 is not admin -> not add to list
+        invest3 = Investment.query.filter_by(id=3).first()
+        worker1 = Worker(position="pos1", admin=False, user_id=user1.id)
+        worker2 = Worker(position="pos2", admin=True, user_id=user2.id)
+        invest3.workers.append(worker1)
+        invest3.workers.append(worker2)
 
-def test_get_current_invest_when_no_investment(app_and_db, add_user):
-    user = User.query.filter_by(username="test_user").first()
-    current_invest = Investment.get_current_invest(user)
-    assert current_invest.name == None
+        # three user, two admin, user1 is admin -> not add to list
+        invest4 = Investment.query.filter_by(id=4).first()
+        worker1 = Worker(position="pos1", admin=True, user_id=user1.id)
+        worker2 = Worker(position="pos2", admin=False, user_id=user2.id)
+        worker3 = Worker(position="pos3", admin=True, user_id=user3.id)
+        invest4.workers.append(worker1)
+        invest4.workers.append(worker2)
+        invest4.workers.append(worker3)
+
+        db.session.commit()
+
+        user = User.query.filter_by(username="user_1").first()
+        assert User.check_admins(user_id=user.id)[0] == [invest2]
+        assert User.check_admins(user_id=user.id)[1] == [invest1]
+
+    @staticmethod
+    def test_get_workers(app_and_db):
+        db = app_and_db[1]
+        user1 = User(
+            username="test_user_1", email="test_user_1@gmail.com", password="password"
+        )
+        user2 = User(
+            username="test_user_2", email="test_user_2@gmail.com", password="password"
+        )
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.add(Investment(name="test invest 1"))
+        db.session.add(Investment(name="test invest 2"))
+        db.session.add(Investment(name="test invest 3"))
+        db.session.commit()
+
+        user1 = User.get_user(1)
+        invest1 = Investment.query.filter_by(id=1).first()
+        invest1.workers.append(Worker(position="pos1", user_id=user1.id))
+        invest2 = Investment.query.filter_by(id=2).first()
+        invest2.workers.append(Worker(position="pos2", user_id=user1.id))
+
+        user2 = User.get_user(2)
+        invest3 = Investment.query.filter_by(id=3).first()
+        invest3.workers.append(Worker(position="pos3", user_id=user2.id))
+
+        db.session.commit()
+
+        worker1 = Worker.query.filter_by(position="pos1").first()
+        worker2 = Worker.query.filter_by(position="pos2").first()
+
+        assert User.get_workers(user_id=1) == [worker1, worker2]

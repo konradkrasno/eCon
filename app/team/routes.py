@@ -6,7 +6,7 @@ from app import db
 from app.team import bp
 from app.team.forms import CreateWorkerForm, EditWorkerForm
 from app.main.forms import WarrantyForm
-from app.models import Worker, User
+from app.models import Worker, User, Investment
 from app.auth.email import send_complete_registration_mail
 
 
@@ -98,7 +98,7 @@ def change_root_permission():
     if Worker.is_admin(current_user.id, g.current_invest.id):
         worker = Worker.query.filter_by(id=_id).first()
         if worker:
-            num_of_admins = g.current_invest.get_num_of_admins()
+            num_of_admins = Investment.get_num_of_admins(g.current_invest.id)
             if num_of_admins < 2:
                 if worker.admin:
                     flash("You can not delete last admin!")

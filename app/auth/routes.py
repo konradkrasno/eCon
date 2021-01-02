@@ -212,8 +212,24 @@ def delete_account():
         if form.no.data:
             return redirect(url_for("main.user", username=username))
         elif form.yes.data:
-            # TODO add checking if user id only admin in any investment
-            User.query.filter_by(username=username).delete()
+            user = User.query.filter_by(username=username).first()
+            projects, empty_projects = User.check_admins(user_id=user.id)
+            if projects:
+                flash(
+                    "This accounts is only admin in projects: {}."
+                    " Give root permission to other user and try again".format(
+                        [project.name for project in projects]
+                    )
+                )
+                return redirect(url_for("main.user", username=username))
+            workers = User.get_workers(user_id=user.id)
+            if workers:
+                for worker in workers:
+                    db.session.delete(worker)
+            if empty_projects:
+                for project in empty_projects:
+                    db.session.delete(project)
+            db.session.delete(user)
             db.session.commit()
             flash("Your account has been deleted.")
             return redirect(url_for("main.index"))

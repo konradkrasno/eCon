@@ -18,6 +18,8 @@ from app.loading_csv import read_csv_file
 
 
 class User(UserMixin, db.Model):
+    __tablename__ = "users"
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
@@ -26,7 +28,7 @@ class User(UserMixin, db.Model):
     current_invest_id = db.Column(db.Integer())
     workers = db.relationship(
         "Worker",
-        backref="user",
+        backref="users",
         lazy="dynamic",
         cascade="all, delete",
         passive_deletes=True,
@@ -49,6 +51,38 @@ class User(UserMixin, db.Model):
         if id:
             return cls.query.get(id)
 
+    @classmethod
+    def get_investments(cls, user_id: int) -> List:
+        """ Returns list of investments which the user is the worker in it. """
+
+        return (
+            Investment.query.join(Worker, Worker.investment_id == Investment.id)
+            .filter_by(user_id=user_id)
+            .all()
+        )
+
+    @staticmethod
+    def check_admins(user_id: int) -> Tuple[List, List]:
+        """Returns list of investments which the user is the lonely admin
+        and other workers belong to those investments."""
+
+        projects = []
+        empty_projects = []
+        investments = User.get_investments(user_id=user_id)
+        for invest in investments:
+            if len(invest.workers.all()) < 2:
+                empty_projects.append(invest)
+            elif Investment.get_num_of_admins(invest.id) == 1:
+                if Worker.is_admin(user_id=user_id, investment_id=invest.id):
+                    projects.append(invest)
+        return projects, empty_projects
+
+    @staticmethod
+    def get_workers(user_id: int) -> List:
+        """ Returns list of workers, which the user is. """
+
+        return Worker.query.filter_by(user_id=user_id).all()
+
     def __repr__(self) -> str:
         return "<User(username=%s)>" % (self.username,)
 
@@ -62,7 +96,7 @@ class Worker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     position = db.Column(db.String(128))
     admin = db.Column(db.Boolean())
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"))
     investment_id = db.Column(
         db.Integer, db.ForeignKey("investment.id", ondelete="CASCADE")
     )
@@ -124,12 +158,11 @@ class Investment(db.Model):
             return investment
         return Investment()
 
-    def get_num_of_admins(self) -> int:
-        num_of_admins = 0
-        for worker in self.workers:
-            if worker.admin:
-                num_of_admins += 1
-        return num_of_admins
+    @staticmethod
+    def get_num_of_admins(investment_id: int) -> int:
+        return len(
+            Worker.query.filter_by(investment_id=investment_id, admin=True).all()
+        )
 
     def __repr__(self) -> str:
         return "<Investment(name=%s)>" % (self.name,)
