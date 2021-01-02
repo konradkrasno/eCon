@@ -93,12 +93,14 @@ def load_user(id: str) -> User:
 
 
 class Worker(db.Model):
+    __tablename__ = "workers"
+
     id = db.Column(db.Integer, primary_key=True)
     position = db.Column(db.String(128))
     admin = db.Column(db.Boolean())
     user_id = db.Column(db.Integer, db.ForeignKey("users.id", ondelete="CASCADE"))
     investment_id = db.Column(
-        db.Integer, db.ForeignKey("investment.id", ondelete="CASCADE")
+        db.Integer, db.ForeignKey("investments.id", ondelete="CASCADE")
     )
 
     @classmethod
@@ -126,12 +128,14 @@ class Worker(db.Model):
 
 
 class Investment(db.Model):
+    __tablename__ = "investments"
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), index=True, unique=True)
     description = db.Column(db.Text())
     workers = db.relationship(
         "Worker",
-        backref="investment",
+        backref="investments",
         lazy="dynamic",
         cascade="all, delete",
         passive_deletes=True,
@@ -169,11 +173,13 @@ class Investment(db.Model):
 
 
 class Hole(db.Model):
+    __tablename__ = "holes"
+
     id = db.Column(db.Integer, primary_key=True)
     width = db.Column(db.Float(precision=2))
     height = db.Column(db.Float(precision=2))
     amount = db.Column(db.Integer)
-    wall_id = db.Column(db.Integer, db.ForeignKey("wall.id", ondelete="CASCADE"))
+    wall_id = db.Column(db.Integer, db.ForeignKey("walls.id", ondelete="CASCADE"))
 
     @hybrid_property
     def area(self):
@@ -212,11 +218,13 @@ class Hole(db.Model):
 
 
 class Processing(db.Model):
+    __tablename__ = "processing"
+
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer)
     month = db.Column(db.String(64))
     _done = db.Column(db.Float(precision=2))
-    wall_id = db.Column(db.Integer, db.ForeignKey("wall.id", ondelete="CASCADE"))
+    wall_id = db.Column(db.Integer, db.ForeignKey("walls.id", ondelete="CASCADE"))
 
     @hybrid_property
     def done(self):
@@ -245,6 +253,8 @@ class Processing(db.Model):
 
 
 class Wall(db.Model):
+    __tablename__ = "walls"
+
     id = db.Column(db.Integer, primary_key=True)
     sector = db.Column(db.String(64))
     level = db.Column(db.String(64))
@@ -256,14 +266,14 @@ class Wall(db.Model):
     ceiling_ord = db.Column(db.Float(precision=2))
     holes = db.relationship(
         "Hole",
-        backref="wall",
+        backref="walls",
         lazy="dynamic",
         cascade="all, delete",
         passive_deletes=True,
     )
     processing = db.relationship(
         "Processing",
-        backref="wall",
+        backref="walls",
         lazy="dynamic",
         cascade="all, delete",
         passive_deletes=True,
