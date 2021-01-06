@@ -18,7 +18,7 @@ from app.models import Wall, User
 @bp.route("/index")
 @login_required
 def index() -> str:
-    return render_template("index.html", title="Home", user=current_user)
+    return render_template("index.html", title="Home")
 
 
 @bp.route("/tasks")

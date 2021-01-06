@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block title_content %}
-    {% if user.username %}
-    Hi, {{ user.username }}
+    {% if current_user.username %}
+    Hi, {{ current_user.username }}
     {% endif %}
 {% endblock %}
 {% block app_content %}
