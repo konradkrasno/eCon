@@ -294,7 +294,7 @@ class TestMasonryWorks:
 
 class TestWorker:
     @staticmethod
-    def test_belongs_to_investment(app_and_db, add_user):
+    def test_belongs_to_investment(app_and_db, active_user):
         db = app_and_db[1]
         investment = Investment(name="test invest")
         worker = Worker(position="pos1", user_id=1)
@@ -308,7 +308,7 @@ class TestWorker:
         )
 
     @staticmethod
-    def test_is_admin(app_and_db, add_user):
+    def test_is_admin(app_and_db, active_user):
         db = app_and_db[1]
         db.session.add(Investment(name="test invest 1"))
         db.session.add(Investment(name="test invest 2"))
@@ -320,7 +320,7 @@ class TestWorker:
         assert not Worker.is_admin(user_id=1, investment_id=2)
 
     @staticmethod
-    def test_get_team(app_and_db, add_user):
+    def test_get_team(app_and_db, active_user):
         db = app_and_db[1]
         db.session.add(Investment(name="test invest 1"))
         db.session.add(Worker(position="pos1", admin=True, investment_id=1))
@@ -340,7 +340,7 @@ class TestWorker:
 
 class TestInvestment:
     @staticmethod
-    def test_investment(app_and_db, add_user):
+    def test_investment(app_and_db, active_user):
         db = app_and_db[1]
 
         investment = Investment(name="Test Investment")
@@ -360,7 +360,7 @@ class TestInvestment:
         assert worker.investment_id == investment.id
 
     @staticmethod
-    def test_get_by_user_id(app_and_db, add_user):
+    def test_get_by_user_id(app_and_db, active_user):
         db = app_and_db[1]
         investment = Investment(name="test")
         user = User.query.filter_by(username="test_user").first()
@@ -376,7 +376,7 @@ class TestInvestment:
         assert not Investment.get_by_user_id(user_id=1)
 
     @staticmethod
-    def test_get_current_invest(app_and_db, add_user):
+    def test_get_current_invest(app_and_db, active_user):
         db = app_and_db[1]
 
         investment = Investment(name="Test Investment")
@@ -393,7 +393,7 @@ class TestInvestment:
         assert current_invest.name == "Test Investment"
 
     @staticmethod
-    def test_get_current_invest_when_no_investment(app_and_db, add_user):
+    def test_get_current_invest_when_no_investment(app_and_db, active_user):
         user = User.query.filter_by(username="test_user").first()
         current_invest = Investment.get_current_invest(user)
         assert current_invest.name == None
@@ -441,7 +441,7 @@ class TestUser:
         assert user.id
 
     @staticmethod
-    def test_get_investment(app_and_db, add_user):
+    def test_get_investment(app_and_db, active_user):
         db = app_and_db[1]
         user = User.get_user(1)
         db.session.add(Investment(name="test invest 1"))

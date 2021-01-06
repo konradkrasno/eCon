@@ -21,11 +21,7 @@ from app.auth.forms import (
 from app.main.forms import WarrantyForm
 from app.models import User
 from app.auth.token import verify_token
-from app.auth.email import (
-    send_password_reset_confirmation,
-    send_register_confirmation,
-    send_change_email_confirmation,
-)
+from app.auth import email
 
 
 @bp.route("/login", methods=["GET", "POST"])
@@ -46,7 +42,7 @@ def login() -> str:
         if not next_page or url_parse(next_page).netloc != "":
             next_page = url_for("main.index")
         return redirect(next_page)
-    return render_template("auth/user_form.html", title="Log In", form=form)
+    return render_template("auth/form.html", title="Log In", form=form)
 
 
 @bp.route("/logout")
@@ -70,10 +66,10 @@ def register():
         db.session.add(user)
         db.session.commit()
         user = User.query.filter_by(username=form.username.data).first()
-        send_register_confirmation(user)
+        email.send_register_confirmation(user)
         flash("Check your email to activate your account.")
         return redirect(url_for("auth.login"))
-    return render_template("auth/user_form.html", title="Register", form=form)
+    return render_template("auth/form.html", title="Register", form=form)
 
 
 @bp.route("/activate_account/<token>", methods=["GET", "POST"])
@@ -102,7 +98,7 @@ def edit_profile() -> str:
         if user:
             user.username = form.username.data
             if form.email.data != current_user.email:
-                send_change_email_confirmation(form.email.data, user)
+                email.send_change_email_confirmation(form.email.data, user)
                 flash("Check your email to confirm the email address change.")
             db.session.commit()
             flash("You change your profile data.")
@@ -110,7 +106,7 @@ def edit_profile() -> str:
     elif request.method == "GET":
         form.username.data = current_user.username
         form.email.data = current_user.email
-    return render_template("auth/user_form.html", title="Edit Profile", form=form)
+    return render_template("auth/form.html", title="Edit Profile", form=form)
 
 
 @bp.route("/activate_email/<token>", methods=["GET", "POST"])
@@ -146,7 +142,7 @@ def change_password() -> str:
             db.session.commit()
             flash("You change your password successfully.")
             return redirect(url_for("main.user", username=current_user.username))
-    return render_template("auth/user_form.html", title="Change Password", form=form)
+    return render_template("auth/form.html", title="Change Password", form=form)
 
 
 @bp.route("/reset_password_request", methods=["GET", "POST"])
@@ -157,17 +153,17 @@ def reset_password_request() -> str:
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user:
-            send_password_reset_confirmation(user)
+            email.send_password_reset_confirmation(user)
         flash("Check your email to reset your password.")
         return redirect(url_for("auth.login"))
-    return render_template("auth/user_form.html", title="Reset Password", form=form)
+    return render_template("auth/form.html", title="Reset Password", form=form)
 
 
 @bp.route("/reset_password", methods=["GET", "POST"])
 def reset_password() -> str:
-    token = request.args.get("token")
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
+    token = request.args.get("token")
     _id = verify_token(token).get("id", None)
     user = User.get_user(_id)
     if not user:
@@ -176,16 +172,16 @@ def reset_password() -> str:
     if form.validate_on_submit():
         user.set_password(form.password.data)
         db.session.commit()
-        flash("Your password has benn reset.")
+        flash("Your password has been reset.")
         return redirect(url_for("auth.login"))
-    return render_template("auth/user_form.html", title="Change Password", form=form)
+    return render_template("auth/form.html", title="Change Password", form=form)
 
 
 @bp.route("/complete_registration", methods=["GET", "POST"])
 def complete_registration() -> str:
-    token = request.args.get("token")
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
+    token = request.args.get("token")
     _id = verify_token(token).get("id", None)
     user = User.get_user(_id)
     if not user:
@@ -198,9 +194,7 @@ def complete_registration() -> str:
         db.session.commit()
         flash("You have successfully complete the registration.")
         return redirect(url_for("auth.login"))
-    return render_template(
-        "auth/user_form.html", title="Complete Registration", form=form
-    )
+    return render_template("auth/form.html", title="Complete Registration", form=form)
 
 
 @bp.route("/delete_account", methods=["GET", "POST"])
@@ -231,6 +225,6 @@ def delete_account():
                     db.session.delete(project)
             db.session.delete(user)
             db.session.commit()
-            flash("Your account has been deleted.")
+            flash("The account has been deleted.")
             return redirect(url_for("main.index"))
     return render_template("warranty_form.html", title="Delete Account", form=form)

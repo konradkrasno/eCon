@@ -1,8 +1,5 @@
-import pytest
-
 from flask import url_for
 from app.models import Wall, Hole, Processing
-from app.tests.conftest import assert_flashes
 
 
 def test_walls(client, captured_templates):

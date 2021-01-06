@@ -48,7 +48,7 @@ def add_worker() -> str:
         db.session.commit()
         flash("You have added new worker successfully.")
         return redirect(url_for("team.team"))
-    return render_template("team/team_form.html", title="Add Worker", form=form)
+    return render_template("team/form.html", title="Add Worker", form=form)
 
 
 @bp.route("/edit", methods=["GET", "POST"])
@@ -66,7 +66,7 @@ def edit_worker() -> str:
             return redirect(url_for("team.team"))
         elif request.method == "GET":
             form.position.data = worker.position
-        return render_template("team/team_form.html", title="Edit Worker", form=form)
+        return render_template("team/form.html", title="Edit Worker", form=form)
     return redirect(url_for("teat.team"))
 
 
