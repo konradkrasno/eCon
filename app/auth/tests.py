@@ -1,5 +1,3 @@
-import pytest
-
 from flask import url_for
 from flask_login import current_user
 from app.auth.forms import (

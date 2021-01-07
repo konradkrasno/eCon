@@ -4,10 +4,9 @@ import pytest
 
 from contextlib import contextmanager
 from flask import template_rendered
-from flask_login import logout_user
 from app import create_app, db, login
 from config import config
-from app.models import Wall, User
+from app.models import Wall, User, Investment, Worker
 
 
 @contextmanager
@@ -73,6 +72,17 @@ def wall_data() -> Dict:
 @pytest.fixture
 def add_wall(app_and_db, wall_data):
     Wall.add_wall(**wall_data)
+
+
+@pytest.fixture
+def add_investment(app_and_db, active_user):
+    user = User.query.filter_by(username="test_user").first()
+    db = app_and_db[1]
+    investment = Investment(name="Test Invest", description="test text")
+    worker = Worker(position="admin", admin=True, user_id=user.id)
+    investment.workers.append(worker)
+    db.session.add(investment)
+    db.session.commit()
 
 
 @pytest.fixture
