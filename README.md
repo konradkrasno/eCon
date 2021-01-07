@@ -40,7 +40,7 @@ pip3 install -r requirements.txt
 Create .env file:
 ```
 SECRET_KEY=<your-secret-key>
-DATABASE_URL=<dialect+driver://username:password@host:port/database>
+DATABASE_URL=<postgresql+psycopg2://username:password@host:port/database>
 MAIL_SERVER=<your-mail-server>
 MAIL_PORT=<your-mail-port>
 MAIL_USE_TLS=<1 or 0>
