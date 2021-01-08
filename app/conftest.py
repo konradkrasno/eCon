@@ -75,19 +75,24 @@ def add_wall(app_and_db, wall_data):
 
 
 @pytest.fixture
-def add_investment(app_and_db, active_user):
-    user = User.query.filter_by(username="test_user").first()
+def add_investment(app_and_db, active_user, unlogged_user):
     db = app_and_db[1]
+    user1 = User.query.filter_by(username="active_user").first()
+    user2 = User.query.filter_by(username="unlogged_user").first()
     investment = Investment(name="Test Invest", description="test text")
-    worker = Worker(position="admin", admin=True, user_id=user.id)
-    investment.workers.append(worker)
+    worker1 = Worker(position="admin", admin=True, user_id=user1.id)
+    worker2 = Worker(position="second worker", admin=False, user_id=user2.id)
+    investment.workers.append(worker1)
+    investment.workers.append(worker2)
     db.session.add(investment)
     db.session.commit()
 
 
 @pytest.fixture
 def active_user(app_and_db):
-    user = User(username="test_user", email="test@email.com", password="password")
+    user = User(
+        username="active_user", email="active_user@email.com", password="password"
+    )
     user.is_active = True
     db.session.add(user)
     db.session.commit()
@@ -96,8 +101,8 @@ def active_user(app_and_db):
 @pytest.fixture
 def unlogged_user(app_and_db):
     user = User(
-        username="unlogged_test_user",
-        email="unlogged_test@email.com",
+        username="unlogged_user",
+        email="unlogged_user@email.com",
         password="password",
     )
     user.is_active = True
@@ -108,8 +113,8 @@ def unlogged_user(app_and_db):
 @pytest.fixture
 def inactive_user(app_and_db):
     user = User(
-        username="test_user_inactive",
-        email="test_inactive@email.com",
+        username="inactive_user",
+        email="inactive_user@email.com",
         password="password",
     )
     user.is_active = False
@@ -122,5 +127,5 @@ def test_with_authenticated_user(active_user):
     @login.request_loader
     def load_user_from_request(request):
         return User.query.filter(
-            User.username.notin_(["unlogged_test_user", "test_user_inactive"])
+            User.username.notin_(["unlogged_user", "inactive_user"])
         ).first()

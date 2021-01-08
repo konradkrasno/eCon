@@ -51,18 +51,18 @@ class TestLogin:
 
     @staticmethod
     def test_post_when_valid_data(client, unlogged_user):
-        form = LoginForm(username="unlogged_test_user", password="password")
+        form = LoginForm(username="unlogged_user", password="password")
         response = client.post(
             url_for("auth.login"),
             data=form.data,
             follow_redirects=True,
         )
         assert response.status_code == 200
-        assert current_user.username == "unlogged_test_user"
+        assert current_user.username == "unlogged_user"
 
     @staticmethod
     def test_post_when_wrong_data(client, unlogged_user):
-        form = LoginForm(username="unlogged_test_user", password="wrong_password")
+        form = LoginForm(username="unlogged_user", password="wrong_password")
         response = client.post(
             url_for("auth.login"),
             data=form.data,
@@ -73,7 +73,7 @@ class TestLogin:
 
     @staticmethod
     def test_post_when_user_not_active(client, inactive_user):
-        form = LoginForm(username="test_user_inactive", password="password")
+        form = LoginForm(username="inactive_user", password="password")
         response = client.post(
             url_for("auth.login"),
             data=form.data,
@@ -211,7 +211,7 @@ class TestActivateEmail:
         )
         client.post(url_for("auth.edit_profile"), data=form.data, follow_redirects=True)
 
-        user = User.query.filter_by(username="test_user").first()
+        user = User.query.filter_by(username="active_user").first()
         token = get_confirmation_token(id=user.id, email=form.email.data)
         response = client.post(
             url_for("auth.activate_email", token=token), follow_redirects=True
@@ -259,14 +259,14 @@ class TestResetPasswordRequest:
     @staticmethod
     def test_post_with_right_email(client, mocker, unlogged_user):
         mocker.patch("app.auth.email.send_password_reset_confirmation")
-        form = ResetPasswordForm(email="unlogged_test@email.com")
+        form = ResetPasswordForm(email="unlogged_user@email.com")
         response = client.post(
             url_for("auth.reset_password_request"),
             data=form.data,
             follow_redirects=True,
         )
         assert response.status_code == 200
-        user = User.query.filter_by(username="unlogged_test_user").first()
+        user = User.query.filter_by(username="unlogged_user").first()
         email.send_password_reset_confirmation.assert_called_once_with(user)
         assert b"Check your email to reset your password." in response.data
 
@@ -287,7 +287,7 @@ class TestResetPasswordRequest:
 class TestResetPassword:
     @staticmethod
     def test_get(client, captured_templates, unlogged_user):
-        user = User.query.filter_by(username="unlogged_test_user").first()
+        user = User.query.filter_by(username="unlogged_user").first()
         token = get_confirmation_token(id=user.id)
         response = client.get(url_for("auth.reset_password", token=token))
         assert response.status_code == 200
@@ -299,7 +299,7 @@ class TestResetPassword:
 
     @staticmethod
     def test_post_with_valid_token(client, unlogged_user):
-        user = User.query.filter_by(username="unlogged_test_user").first()
+        user = User.query.filter_by(username="unlogged_user").first()
         token = get_confirmation_token(id=user.id)
         form = ChangePasswordForm(password="new_password", password2="new_password")
         response = client.post(
@@ -313,7 +313,7 @@ class TestResetPassword:
 
     @staticmethod
     def test_post_with_invalid_token(client, unlogged_user):
-        user = User.query.filter_by(username="unlogged_test_user").first()
+        user = User.query.filter_by(username="unlogged_user").first()
         form = ChangePasswordForm(password="new_password", password2="new_password")
         response = client.post(
             url_for("auth.reset_password", token="invalid_token"),
@@ -328,7 +328,7 @@ class TestResetPassword:
 class TestCompleteRegistration:
     @staticmethod
     def test_get(client, captured_templates, inactive_user):
-        user = User.query.filter_by(username="test_user_inactive").first()
+        user = User.query.filter_by(username="inactive_user").first()
         token = get_confirmation_token(id=user.id)
         response = client.get(url_for("auth.complete_registration", token=token))
         assert response.status_code == 200
@@ -340,7 +340,7 @@ class TestCompleteRegistration:
 
     @staticmethod
     def test_post_with_valid_token(client, inactive_user):
-        user = User.query.filter_by(username="test_user_inactive").first()
+        user = User.query.filter_by(username="inactive_user").first()
         token = get_confirmation_token(id=user.id)
         form = CompleteRegistrationForm(
             username="new_test_user", password="new_password", password2="new_password"
@@ -358,7 +358,7 @@ class TestCompleteRegistration:
 
     @staticmethod
     def test_post_with_invalid_token(client, inactive_user):
-        user = User.query.filter_by(username="test_user_inactive").first()
+        user = User.query.filter_by(username="inactive_user").first()
         form = CompleteRegistrationForm(
             username="new_test_user", password="new_password", password2="new_password"
         )
@@ -377,7 +377,7 @@ class TestCompleteRegistration:
 class TestDeleteAccount:
     @staticmethod
     def test_get(client, captured_templates, test_with_authenticated_user):
-        response = client.get(url_for("auth.delete_account", username="test_user"))
+        response = client.get(url_for("auth.delete_account", username="active_user"))
         assert response.status_code == 200
         assert len(captured_templates) == 1
         template, context = captured_templates[0]
@@ -388,7 +388,7 @@ class TestDeleteAccount:
     @staticmethod
     def test_post_when_no(client, test_with_authenticated_user):
         response = client.post(
-            url_for("auth.delete_account", username="test_user"),
+            url_for("auth.delete_account", username="active_user"),
             data={"no": True},
             follow_redirects=True,
         )
@@ -400,8 +400,8 @@ class TestDeleteAccount:
     ):
         db = app_and_db[1]
         investment = Investment(name="Test Invest")
-        user1 = User.query.filter_by(username="test_user").first()
-        user2 = User.query.filter_by(username="test_user_inactive").first()
+        user1 = User.query.filter_by(username="active_user").first()
+        user2 = User.query.filter_by(username="inactive_user").first()
         worker1 = Worker(position="pos1", admin=True, user_id=user1.id)
         worker2 = Worker(position="pos2", admin=False, user_id=user2.id)
         investment.workers.append(worker1)
@@ -410,12 +410,12 @@ class TestDeleteAccount:
         db.session.commit()
 
         response = client.post(
-            url_for("auth.delete_account", username="test_user"),
+            url_for("auth.delete_account", username="active_user"),
             data={"yes": True},
             follow_redirects=True,
         )
         assert response.status_code == 200
-        assert User.query.filter_by(username="test_user").first()
+        assert User.query.filter_by(username="active_user").first()
         assert len(Worker.query.all()) == 2
         assert (
             b"This accounts is only admin in projects: [&#39;Test Invest&#39;]."
@@ -429,8 +429,8 @@ class TestDeleteAccount:
         db = app_and_db[1]
 
         investment1 = Investment(name="Test Invest 1")
-        user1 = User.query.filter_by(username="test_user").first()
-        user2 = User.query.filter_by(username="test_user_inactive").first()
+        user1 = User.query.filter_by(username="active_user").first()
+        user2 = User.query.filter_by(username="inactive_user").first()
         worker1 = Worker(position="pos1", admin=True, user_id=user1.id)
         worker2 = Worker(position="pos2", admin=True, user_id=user2.id)
         investment1.workers.append(worker1)
@@ -445,12 +445,12 @@ class TestDeleteAccount:
         db.session.commit()
 
         response = client.post(
-            url_for("auth.delete_account", username="test_user"),
+            url_for("auth.delete_account", username="active_user"),
             data={"yes": True},
             follow_redirects=True,
         )
         assert response.status_code == 200
-        assert not User.query.filter_by(username="test_user").first()
+        assert not User.query.filter_by(username="active_user").first()
         assert Worker.query.all() == Worker.query.filter_by(user_id=user2.id).all()
         assert (
             Investment.query.all()

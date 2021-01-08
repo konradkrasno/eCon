@@ -302,7 +302,9 @@ class TestWorker:
         db.session.add(investment)
         db.session.commit()
 
-        assert Worker.belongs_to_investment(email="test@email.com", investment_id=1)
+        assert Worker.belongs_to_investment(
+            email="active_user@email.com", investment_id=1
+        )
         assert not Worker.belongs_to_investment(
             email="another@email.com", investment_id=1
         )
@@ -344,13 +346,13 @@ class TestInvestment:
         db = app_and_db[1]
 
         investment = Investment(name="Test Investment")
-        user = User.query.filter_by(username="test_user").first()
+        user = User.query.filter_by(username="active_user").first()
         worker = Worker(position="test position", user_id=user.id)
         investment.workers.append(worker)
         db.session.add(investment)
         db.session.commit()
 
-        user = User.query.filter_by(username="test_user").first()
+        user = User.query.filter_by(username="active_user").first()
         worker = Worker.query.filter_by(position="test position").first()
         investment = Investment.query.filter_by(name="Test Investment").first()
 
@@ -363,7 +365,7 @@ class TestInvestment:
     def test_get_by_user_id(app_and_db, active_user):
         db = app_and_db[1]
         investment = Investment(name="test")
-        user = User.query.filter_by(username="test_user").first()
+        user = User.query.filter_by(username="active_user").first()
         worker = Worker(position="test worker", user_id=user.id)
         investment.workers.append(worker)
         db.session.add(investment)
@@ -380,21 +382,21 @@ class TestInvestment:
         db = app_and_db[1]
 
         investment = Investment(name="Test Investment")
-        user = User.query.filter_by(username="test_user").first()
+        user = User.query.filter_by(username="active_user").first()
         user.current_invest_id = 1
         worker = Worker(position="test position", user_id=user.id)
         investment.workers.append(worker)
         db.session.add(investment)
         db.session.commit()
 
-        user = User.query.filter_by(username="test_user").first()
+        user = User.query.filter_by(username="active_user").first()
         current_invest = Investment.get_current_invest(user)
         print(type(current_invest))
         assert current_invest.name == "Test Investment"
 
     @staticmethod
     def test_get_current_invest_when_no_investment(app_and_db, active_user):
-        user = User.query.filter_by(username="test_user").first()
+        user = User.query.filter_by(username="active_user").first()
         current_invest = Investment.get_current_invest(user)
         assert current_invest.name == None
 

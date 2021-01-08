@@ -7,7 +7,7 @@ from app.team import bp
 from app.team.forms import CreateWorkerForm, EditWorkerForm
 from app.main.forms import WarrantyForm
 from app.models import Worker, User, Investment
-from app.auth.email import send_complete_registration_mail
+from app.auth import email
 
 
 @bp.route("/")
@@ -38,7 +38,7 @@ def add_worker() -> str:
             db.session.add(user)
             db.session.commit()
             user = User.query.filter_by(email=form.email.data).first()
-            send_complete_registration_mail(user)
+            email.send_complete_registration_mail(user)
         worker = Worker(
             position=form.position.data,
             admin=form.admin.data,
@@ -63,6 +63,7 @@ def edit_worker() -> str:
         if form.validate_on_submit():
             worker.position = form.position.data
             db.session.commit()
+            flash("You have edited the information about the worker successfully.")
             return redirect(url_for("team.team"))
         elif request.method == "GET":
             form.position.data = worker.position

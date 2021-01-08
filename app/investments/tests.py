@@ -1,4 +1,3 @@
-from datetime import datetime
 from flask import url_for
 from flask_login import current_user
 from app.models import User, Investment, Worker
@@ -10,7 +9,7 @@ class TestInvestList:
     @staticmethod
     def test_get(client, captured_templates, mocker, test_with_authenticated_user):
         mocker.patch("app.models.Investment.get_by_user_id")
-        user = User.query.filter_by(username="test_user").first()
+        user = User.query.filter_by(username="active_user").first()
         response = client.get(url_for("investments.invest_list"))
         assert response.status_code == 200
         assert len(captured_templates) == 1
@@ -35,7 +34,7 @@ class TestCreate:
 
     @staticmethod
     def test_post(client, test_with_authenticated_user):
-        user = User.query.filter_by(username="test_user").first()
+        user = User.query.filter_by(username="active_user").first()
         form = InvestmentForm(name="New Invest", description="test text")
         response = client.post(
             url_for("investments.create"), data=form.data, follow_redirects=True
@@ -62,18 +61,17 @@ class TestInfo:
         assert template.name == "investments/info.html"
         assert context["title"] == "Investment"
         assert context["investment"] == investment
-        assert context["admin"] == True
+        assert context["admin"]
 
 
 class TestChoose:
     @staticmethod
     def test_post(client, test_with_authenticated_user):
-        user = User.query.filter_by(username="test_user").first()
         response = client.get(
             url_for("investments.choose", _id=100), follow_redirects=True
         )
         assert response.status_code == 200
-        assert user.current_invest_id == 100
+        assert current_user.current_invest_id == 100
 
 
 class TestEdit:
@@ -83,13 +81,9 @@ class TestEdit:
         assert response.status_code == 302
 
     @staticmethod
-    def test_get_with_no_admin(
-        app_and_db, client, test_with_authenticated_user, add_investment
-    ):
-        db = app_and_db[1]
+    def test_get_with_no_admin(client, test_with_authenticated_user, add_investment):
         worker = Worker.query.filter_by(user_id=current_user.id).first()
         worker.admin = False
-        db.session.commit()
         investment = Investment.query.filter_by(name="Test Invest").first()
         response = client.get(url_for("investments.edit", _id=investment.id))
         assert response.status_code == 302
@@ -129,16 +123,13 @@ class TestEdit:
 class TestDelete:
     @staticmethod
     def test_get_with_no_admin(
-        app_and_db,
         client,
         captured_templates,
         test_with_authenticated_user,
         add_investment,
     ):
-        db = app_and_db[1]
         worker = Worker.query.filter_by(user_id=current_user.id).first()
         worker.admin = False
-        db.session.commit()
         investment = Investment.query.filter_by(name="Test Invest").first()
         response = client.get(url_for("investments.delete", _id=investment.id))
         assert response.status_code == 302
