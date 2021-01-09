@@ -1,12 +1,19 @@
 from typing import *
 
 import pytest
+import os
 
 from contextlib import contextmanager
 from flask import template_rendered
 from app import create_app, db, login
-from config import config
+from config import config, BASE_DIR
 from app.models import Wall, User, Investment, Worker
+
+
+contexts_required = pytest.mark.skipif(
+    not os.path.exists(os.path.join(BASE_DIR, config["UPLOAD_FOLDER"], "test")),
+    reason="contexts csv does not exist",
+)
 
 
 @contextmanager

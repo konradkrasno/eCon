@@ -1,6 +1,7 @@
 import pytest
 
 from app.models import Hole, Processing, Wall, User, Investment, Worker
+from app.conftest import contexts_required
 
 
 class TestMasonryWorks:
@@ -236,6 +237,7 @@ class TestMasonryWorks:
         Wall.delete_processing(1)
 
     @staticmethod
+    @contexts_required
     def test_upload_walls(app_and_db):
         messages = Wall.upload_walls("test/walls.csv")
         assert len(Wall.query.all()) == 5
@@ -248,6 +250,7 @@ class TestMasonryWorks:
         assert Wall.query.filter_by(id=1).first().wall_width == 18
 
     @staticmethod
+    @contexts_required
     def test_upload_walls_when_wrong_file(app_and_db):
         messages = Wall.upload_walls("test/holes.csv")
         assert len(Wall.query.all()) == 0
@@ -255,6 +258,7 @@ class TestMasonryWorks:
         assert messages[0] == "Uploaded 0 items."
 
     @staticmethod
+    @contexts_required
     def test_upload_holes(app_and_db):
         Wall.upload_walls("test/walls.csv")
         Wall.upload_holes("test/holes.csv")
@@ -272,6 +276,7 @@ class TestMasonryWorks:
         )
 
     @staticmethod
+    @contexts_required
     def test_upload_processing(app_and_db):
         Wall.upload_walls("test/walls.csv")
         Wall.upload_processing("test/processing.csv")
