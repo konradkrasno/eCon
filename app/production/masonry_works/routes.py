@@ -134,20 +134,20 @@ def add_processing() -> str:
 def edit_wall() -> str:
     wall_id = request.args.get("wall_id")
     wall = Wall.query.filter_by(id=wall_id).first()
-    form = EditWallForm(
-        sector=wall.sector,
-        level=wall.level,
-        localization=wall.localization,
-        brick_type=wall.brick_type,
-        wall_width=wall.wall_width,
-        wall_length=wall.wall_length,
-        floor_ord=wall.floor_ord,
-        ceiling_ord=wall.ceiling_ord,
-    )
+    form = EditWallForm()
     if form.validate_on_submit():
         Wall.edit_wall(wall_id, **form.data)
         flash("You modified the wall.")
         return redirect(url_for("masonry_works.modify", wall_id=wall_id))
+    elif request.method == "GET":
+        form.sector.data = wall.sector
+        form.level.data = wall.level
+        form.localization.data = wall.localization
+        form.brick_type.data = wall.brick_type
+        form.wall_width.data = wall.wall_width
+        form.wall_length.data = wall.wall_length
+        form.floor_ord.data = wall.floor_ord
+        form.ceiling_ord.data = wall.ceiling_ord
     return render_template(
         "production/masonry_works/forms/wall_form.html",
         title="Edit Wall",
@@ -161,15 +161,15 @@ def edit_hole() -> str:
     wall_id = request.args.get("wall_id")
     hole_id = request.args.get("hole_id")
     hole = Hole.query.filter_by(id=hole_id).first()
-    form = HoleForm(
-        width=hole.width,
-        height=hole.height,
-        amount=hole.amount,
-    )
+    form = HoleForm()
     if form.validate_on_submit():
         Wall.edit_hole(hole_id, **form.data)
         flash("You modified the hole.")
         return redirect(url_for("masonry_works.holes", wall_id=wall_id))
+    elif request.method == "GET":
+        form.width.data = hole.width
+        form.height.data = hole.height
+        form.amount.data = hole.amount
     return render_template(
         "production/masonry_works/forms/hole_form.html",
         title="Edit Hole",
@@ -177,24 +177,21 @@ def edit_hole() -> str:
     )
 
 
-@bp.route(
-    "/edit_processing",
-    methods=["GET", "POST"],
-)
+@bp.route("/edit_processing", methods=["GET", "POST"])
 @login_required
 def edit_processing() -> str:
     wall_id = request.args.get("wall_id")
     proc_id = request.args.get("proc_id")
     processing = Processing.query.filter_by(id=proc_id).first()
-    form = ProcessingForm(
-        year=processing.year,
-        month=processing.month,
-        done=processing.done,
-    )
+    form = ProcessingForm()
     if form.validate_on_submit():
         Wall.edit_processing(proc_id, **form.data)
         flash("You modified the processing.")
         return redirect(url_for("masonry_works.processing", wall_id=wall_id))
+    elif request.method == "GET":
+        form.year.data = processing.year
+        form.month.data = processing.month
+        form.done.data = processing.done
     return render_template(
         "production/masonry_works/forms/processing_form.html",
         title="Edit Processing",
@@ -245,10 +242,7 @@ def delete_hole() -> str:
     )
 
 
-@bp.route(
-    "/delete_processing",
-    methods=["GET", "POST"],
-)
+@bp.route("/delete_processing", methods=["GET", "POST"])
 @login_required
 def delete_processing() -> str:
     wall_id = request.args.get("wall_id")

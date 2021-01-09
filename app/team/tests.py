@@ -242,9 +242,7 @@ class TestChangeRootPermission:
         assert isinstance(context["form"], WarrantyForm)
 
     @staticmethod
-    def test_post(
-        client, test_with_authenticated_user, add_investment
-    ):
+    def test_post(client, test_with_authenticated_user, add_investment):
         investment = Investment.query.filter_by(name="Test Invest").first()
         current_user.current_invest_id = investment.id
         # Giving root permission
@@ -257,7 +255,8 @@ class TestChangeRootPermission:
         )
         assert response.status_code == 200
         assert (
-            b"You have changed worker&#39;s root permission successfully." in response.data
+            b"You have changed worker&#39;s root permission successfully."
+            in response.data
         )
         assert worker.admin
         # Taking away root permission
@@ -270,6 +269,7 @@ class TestChangeRootPermission:
         )
         assert response.status_code == 200
         assert (
-            b"You have changed worker&#39;s root permission successfully." in response.data
+            b"You have changed worker&#39;s root permission successfully."
+            in response.data
         )
         assert not worker.admin

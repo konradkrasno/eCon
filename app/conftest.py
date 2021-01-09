@@ -75,6 +75,16 @@ def add_wall(app_and_db, wall_data):
 
 
 @pytest.fixture
+def add_hole(app_and_db):
+    Wall.add_hole(wall_id=1, width=1.2, height=2.25, amount=2)
+
+
+@pytest.fixture
+def add_processing(app_and_db):
+    Wall.add_processing(wall_id=1, year=2020, month="December", done=0.4)
+
+
+@pytest.fixture
 def add_investment(app_and_db, active_user, unlogged_user):
     db = app_and_db[1]
     user1 = User.query.filter_by(username="active_user").first()
