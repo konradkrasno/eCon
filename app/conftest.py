@@ -66,6 +66,7 @@ def captured_templates(app_and_db):
 def wall_data(add_investment) -> Dict:
     investment = Investment.query.first()
     return {
+        "local_id": 1,
         "sector": "G",
         "level": 2,
         "localization": "O/5",

@@ -30,7 +30,7 @@ def walls() -> str:
         items = items.filter_by(brick_type=brick_type)
     if wall_width:
         items = items.filter_by(wall_width=wall_width)
-    items = items.all()
+    items = items.order_by("local_id").all()
     total = TotalAreas(items)
     return render_template(
         "production/masonry_works/walls.html",
@@ -133,12 +133,13 @@ def add_processing() -> str:
 def edit_wall() -> str:
     wall_id = request.args.get("wall_id")
     wall = Wall.query.filter_by(id=wall_id).first()
-    form = WallForm(g.current_invest.id)
+    form = WallForm(invest_id=g.current_invest.id, original_local_id=wall.local_id)
     if form.validate_on_submit():
         Wall.edit_wall(wall_id, **form.data)
         flash("You modified the wall.")
         return redirect(url_for("masonry_works.modify", wall_id=wall_id))
     elif request.method == "GET":
+        form.local_id.data = wall.local_id
         form.sector.data = wall.sector
         form.level.data = wall.level
         form.localization.data = wall.localization

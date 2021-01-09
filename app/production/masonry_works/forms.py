@@ -21,14 +21,16 @@ class WallForm(FlaskForm):
     ceiling_ord = FloatField("Ceiling Ordinate", validators=[InputRequired()])
     submit = SubmitField("Submit")
 
-    def __init__(self, invest_id: int, *args, **kwargs):
+    def __init__(self, invest_id: int, original_local_id: int = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.invest_id = invest_id
+        self.original_local_id = original_local_id
 
     def validate_local_id(self, local_id):
-        ids = [wall.local_id for wall in Wall.get_all_items(self.invest_id).all()]
-        if local_id.data in ids:
-            raise ValidationError("Id must be unique!")
+        if local_id.data != self.original_local_id:
+            ids = [wall.local_id for wall in Wall.get_all_items(self.invest_id).all()]
+            if local_id.data in ids:
+                raise ValidationError("Id must be unique!")
 
 
 class HoleForm(FlaskForm):

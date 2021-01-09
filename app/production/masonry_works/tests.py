@@ -161,6 +161,7 @@ class TestEditWall:
         assert template.name == "production/masonry_works/forms/wall_form.html"
         assert context["title"] == "Edit Wall"
         assert isinstance(context["form"], WallForm)
+        assert context["form"].local_id.data == wall.local_id
         assert context["form"].sector.data == wall.sector
         assert context["form"].level.data == wall.level
         assert context["form"].localization.data == wall.localization
@@ -173,9 +174,9 @@ class TestEditWall:
     @staticmethod
     def test_post(client, test_with_authenticated_user, wall_data):
         Wall.add_wall(**wall_data)
-        wall_data["sector"] = "A"
-        form = WallForm(**wall_data)
         wall = Wall.query.first()
+        wall_data["sector"] = "A"
+        form = WallForm(original_local_id=wall.local_id, **wall_data)
         assert wall.sector == "G"
         response = client.post(
             url_for("masonry_works.edit_wall", wall_id=wall.id),

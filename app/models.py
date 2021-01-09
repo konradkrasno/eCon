@@ -449,7 +449,11 @@ class Wall(db.Model):
                     except ValidationError:
                         failures.append(local_id)
                     else:
-                        wall = Wall.get_all_items(invest_id).filter_by(local_id=local_id).first()
+                        wall = (
+                            Wall.get_all_items(invest_id)
+                            .filter_by(local_id=local_id)
+                            .first()
+                        )
                         if wall:
                             wall = Wall.update_item(wall, **data)
                         else:
@@ -480,7 +484,11 @@ class Wall(db.Model):
             for data in file:
                 wall_local_id = check_field_exists(data, "wall_id")
                 if wall_local_id:
-                    wall = Wall.get_all_items(invest_id).filter_by(local_id=wall_local_id).first()
+                    wall = (
+                        Wall.get_all_items(invest_id)
+                        .filter_by(local_id=wall_local_id)
+                        .first()
+                    )
                     if wall:
                         # deleting all holes with particular wall_id before uploading from csv
                         if wall.id not in wall_ids:
@@ -522,7 +530,11 @@ class Wall(db.Model):
             for data in file:
                 wall_local_id = check_field_exists(data, "wall_id")
                 if wall_local_id:
-                    wall = Wall.get_all_items(invest_id).filter_by(local_id=wall_local_id).first()
+                    wall = (
+                        Wall.get_all_items(invest_id)
+                        .filter_by(local_id=wall_local_id)
+                        .first()
+                    )
                     if wall:
                         # deleting all processing with particular wall_id before uploading from csv
                         if wall.id not in wall_ids:
