@@ -258,6 +258,7 @@ class Wall(db.Model):
     __tablename__ = "walls"
 
     id = db.Column(db.Integer, primary_key=True)
+    local_id = db.Column(db.Integer)
     sector = db.Column(db.String(64))
     level = db.Column(db.String(64))
     localization = db.Column(db.String(128))
@@ -280,7 +281,7 @@ class Wall(db.Model):
         cascade="all, delete",
         passive_deletes=True,
     )
-    # investment_id = db.Column(db.Integer, db.ForeignKey("investment.id"))
+    investment_id = db.Column(db.Integer, db.ForeignKey("investments.id"))
 
     @hybrid_property
     def wall_height(self):
@@ -331,9 +332,9 @@ class Wall(db.Model):
         return left_to_sale
 
     @classmethod
-    def create_item(cls, **kwargs) -> db.Model:
+    def create_item(cls, invest_id: int, **kwargs) -> db.Model:
         return cls(
-            id=kwargs.get("id"),
+            local_id=kwargs.get("local_id"),
             sector=kwargs.get("sector"),
             level=kwargs.get("level"),
             localization=kwargs.get("localization"),
@@ -342,11 +343,12 @@ class Wall(db.Model):
             wall_length=kwargs.get("wall_length"),
             floor_ord=kwargs.get("floor_ord"),
             ceiling_ord=kwargs.get("ceiling_ord"),
+            investment_id=invest_id,
         )
 
     @classmethod
-    def add_wall(cls, **kwargs) -> None:
-        wall = cls.create_item(**kwargs)
+    def add_wall(cls, invest_id: int, **kwargs) -> None:
+        wall = cls.create_item(invest_id, **kwargs)
         db.session.add(wall)
         db.session.commit()
 
@@ -408,6 +410,7 @@ class Wall(db.Model):
 
     @staticmethod
     def update_item(item: db.Model, **kwargs) -> db.Model:
+        kwargs.pop("id", None)
         for attr, val in kwargs.items():
             item.__setattr__(attr, val)
         return item
@@ -428,7 +431,7 @@ class Wall(db.Model):
         db.session.commit()
 
     @classmethod
-    def upload_walls(cls, filename: str) -> List:
+    def upload_walls(cls, invest_id: int, filename: str) -> List:
         success = 0
         failures = []
         try:
@@ -439,30 +442,30 @@ class Wall(db.Model):
             ]
         else:
             for data in file:
-                _id = check_field_exists(data, "id")
-                if _id:
+                local_id = check_field_exists(data, "local_id")
+                if local_id:
                     try:
                         data = validate_walls(data)
                     except ValidationError:
-                        failures.append(_id)
+                        failures.append(local_id)
                     else:
-                        wall = Wall.query.filter_by(id=_id).first()
+                        wall = Wall.get_all_items(invest_id).filter_by(local_id=local_id).first()
                         if wall:
                             wall = Wall.update_item(wall, **data)
                         else:
-                            wall = Wall.create_item(**data)
+                            wall = Wall.create_item(invest_id, **data)
                         db.session.add(wall)
                         try:
                             db.session.commit()
                         except Exception:
                             db.session.rollback()
-                            failures.append(_id)
+                            failures.append(local_id)
                         else:
                             success += 1
             return cls.create_upload_messages(success, failures)
 
     @classmethod
-    def upload_holes(cls, filename: str) -> List:
+    def upload_holes(cls, invest_id: int, filename: str) -> List:
         success = 0
         failures = []
         no_wall = []
@@ -475,18 +478,18 @@ class Wall(db.Model):
             ]
         else:
             for data in file:
-                wall_id = check_field_exists(data, "wall_id")
-                if wall_id:
-                    wall = Wall.query.filter_by(id=wall_id).first()
+                wall_local_id = check_field_exists(data, "wall_id")
+                if wall_local_id:
+                    wall = Wall.get_all_items(invest_id).filter_by(local_id=wall_local_id).first()
                     if wall:
                         # deleting all holes with particular wall_id before uploading from csv
-                        if wall_id not in wall_ids:
-                            Hole.query.filter_by(wall_id=wall_id).delete()
-                            wall_ids.append(wall_id)
+                        if wall.id not in wall_ids:
+                            Hole.query.filter_by(wall_id=wall.id).delete()
+                            wall_ids.append(wall.id)
                         try:
                             data = validate_holes(data)
                         except ValidationError:
-                            failures.append(wall_id)
+                            failures.append(wall_local_id)
                         else:
                             hole = Hole.create_item(**data)
                             wall.holes.append(hole)
@@ -495,15 +498,15 @@ class Wall(db.Model):
                                 db.session.commit()
                             except Exception:
                                 db.session.rollback()
-                                failures.append(wall_id)
+                                failures.append(wall_local_id)
                             else:
                                 success += 1
                     else:
-                        no_wall.append(wall_id)
+                        no_wall.append(wall_local_id)
             return cls.create_upload_messages(success, failures, no_wall)
 
     @classmethod
-    def upload_processing(cls, filename: str) -> List:
+    def upload_processing(cls, invest_id: int, filename: str) -> List:
         success = 0
         failures = []
         no_wall = []
@@ -517,21 +520,21 @@ class Wall(db.Model):
             ]
         else:
             for data in file:
-                wall_id = check_field_exists(data, "wall_id")
-                if wall_id:
-                    wall = Wall.query.filter_by(id=wall_id).first()
+                wall_local_id = check_field_exists(data, "wall_id")
+                if wall_local_id:
+                    wall = Wall.get_all_items(invest_id).filter_by(local_id=wall_local_id).first()
                     if wall:
                         # deleting all processing with particular wall_id before uploading from csv
-                        if wall_id not in wall_ids:
-                            Processing.query.filter_by(wall_id=wall_id).delete()
-                            wall_ids.append(wall_id)
+                        if wall.id not in wall_ids:
+                            Processing.query.filter_by(wall_id=wall.id).delete()
+                            wall_ids.append(wall.id)
                         if wall.left_to_sale == 0:
-                            no_left.append(wall_id)
+                            no_left.append(wall_local_id)
                             continue
                         try:
                             data = validate_processing(wall, data)
                         except ValidationError:
-                            failures.append(wall_id)
+                            failures.append(wall_local_id)
                         else:
                             processing = Processing.create_item(**data)
                             wall.processing.append(processing)
@@ -540,11 +543,11 @@ class Wall(db.Model):
                                 db.session.commit()
                             except Exception:
                                 db.session.rollback()
-                                failures.append(wall_id)
+                                failures.append(wall_local_id)
                             else:
                                 success += 1
                     else:
-                        no_wall.append(wall_id)
+                        no_wall.append(wall_local_id)
             return cls.create_upload_messages(success, failures, no_wall, no_left)
 
     @staticmethod
@@ -574,9 +577,8 @@ class Wall(db.Model):
         return messages
 
     @classmethod
-    def get_all_items(cls) -> db.Model:
-        # return cls.query.filter_by(investment_id=investment_id)
-        return cls.query.order_by(cls.id).all()
+    def get_all_items(cls, invest_id: int) -> db.Model:
+        return cls.query.filter_by(investment_id=invest_id)
 
     @classmethod
     def get_left_to_sale(cls, wall_id: int) -> float:

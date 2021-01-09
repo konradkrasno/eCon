@@ -12,8 +12,8 @@ class TestMasonryWorks:
         assert item
 
     @staticmethod
-    def test_update_item(wall_data):
-        wall = Wall(**wall_data)
+    def test_update_item(add_wall):
+        wall = Wall.query.first()
         wall = Wall.update_item(wall, object="K", level=5)
         assert wall.object == "K"
         assert wall.level == 5
@@ -80,7 +80,7 @@ class TestMasonryWorks:
     @staticmethod
     def test_add_wall(app_and_db, wall_data):
         Wall.add_wall(**wall_data)
-        wall = Wall.get_all_items()[0]
+        wall = Wall.query.first()
         Wall.add_hole(wall.id, width=1.2, height=2.0, amount=2)
         Wall.add_hole(wall.id, width=2.2, height=2.0, amount=1)
         Wall.add_processing(wall.id, year=2020, month="December", done=0.4)
@@ -92,7 +92,7 @@ class TestMasonryWorks:
 
     @staticmethod
     def test_add_hole_without_height(add_wall):
-        wall = Wall.get_all_items()[0]
+        wall = Wall.query.first()
         Wall.add_hole(wall.id, width=1.2, amount=2)
         hole = Hole.query.first()
         assert hole.height == None
@@ -101,7 +101,7 @@ class TestMasonryWorks:
 
     @staticmethod
     def test_add_processing(add_wall):
-        wall = Wall.get_all_items()[0]
+        wall = Wall.query.first()
         assert wall.left_to_sale == 1.0
         Wall.add_processing(wall.id, year=2020, month="December", done=0.4)
         Wall.add_processing(wall.id, year=2020, month="December", done=0.5)
@@ -109,32 +109,32 @@ class TestMasonryWorks:
 
     @staticmethod
     def test_add_processing_when_overrun(add_wall):
-        wall_id = Wall.get_all_items()[0].id
-        Wall.add_processing(wall_id, year=2020, month="December", done=0.4)
-        Wall.add_processing(wall_id, year=2020, month="December", done=0.7)
-        wall = Wall.query.filter_by(id=wall_id).first()
+        wall = Wall.query.first()
+        Wall.add_processing(wall.id, year=2020, month="December", done=0.4)
+        Wall.add_processing(wall.id, year=2020, month="December", done=0.7)
+        wall = Wall.query.filter_by(id=wall.id).first()
         assert wall.processing.filter_by(id=1).first().done == 0.4
         assert wall.processing.filter_by(id=2).first().done == 0.6
         assert wall.left_to_sale == 0.0
 
     @staticmethod
     def test_add_processing_when_done_above_1(add_wall):
-        wall_id = Wall.get_all_items()[0].id
-        Wall.add_processing(wall_id, year=2020, month="December", done=2)
-        wall = Wall.query.filter_by(id=wall_id).first()
+        wall = Wall.query.first()
+        Wall.add_processing(wall.id, year=2020, month="December", done=2)
+        wall = Wall.query.filter_by(id=wall.id).first()
         assert wall.processing[0].done == 1.0
         assert wall.left_to_sale == 0.0
 
     @staticmethod
     def test_update_item_when_wrong_attr(wall_data):
-        wall = Wall(**wall_data)
+        wall = Wall.create_item(**wall_data)
         wall = Wall.update_item(wall, wrong_attr1="K", wrong_attr2=5)
         assert wall.sector == "G"
         assert wall.level == 2
 
     @staticmethod
     def test_update_wall(add_wall):
-        wall = Wall.get_all_items()[0]
+        wall = Wall.query.first()
         assert wall.wall_height == 3.1
         assert wall.gross_wall_area == 32.55
         assert wall.wall_area_to_survey == 32.55
@@ -149,7 +149,7 @@ class TestMasonryWorks:
 
     @staticmethod
     def test_update_hole(add_wall):
-        wall = Wall.get_all_items()[0]
+        wall = Wall.query.first()
         Wall.add_hole(wall.id, width=1.2, height=2.0, amount=2)
         assert wall.holes[0].width == 1.2
         assert wall.holes[0].height == 2.0
@@ -164,7 +164,7 @@ class TestMasonryWorks:
 
     @staticmethod
     def test_update_processing(add_wall):
-        wall = Wall.get_all_items()[0]
+        wall = Wall.query.first()
         Wall.add_processing(wall.id, year=2020, month="December", done=0.3)
         assert wall.processing[0].year == 2020
         assert wall.processing[0].month == "December"
@@ -179,7 +179,7 @@ class TestMasonryWorks:
 
     @staticmethod
     def test_update_processing_when_overrun(add_wall):
-        wall = Wall.get_all_items()[0]
+        wall = Wall.query.first()
         Wall.add_processing(wall.id, year=2020, month="December", done=0.6)
         Wall.add_processing(wall.id, year=2020, month="December", done=0.3)
         assert wall.processing.filter_by(id=1).first().done == 0.6
@@ -192,7 +192,7 @@ class TestMasonryWorks:
 
     @staticmethod
     def test_update_processing_when_done_above_1(add_wall):
-        wall = Wall.get_all_items()[0]
+        wall = Wall.query.first()
         Wall.add_processing(wall.id, year=2020, month="December", done=0.6)
         processing = wall.processing[0]
         Wall.edit_processing(processing.id, done=1.35)
@@ -238,8 +238,9 @@ class TestMasonryWorks:
 
     @staticmethod
     @contexts_required
-    def test_upload_walls(app_and_db):
-        messages = Wall.upload_walls("test/walls.csv")
+    def test_upload_walls(app_and_db, add_investment):
+        investment = Investment.query.first()
+        messages = Wall.upload_walls(investment.id, "test/walls.csv")
         assert len(Wall.query.all()) == 5
         assert len(messages) == 2
         assert messages[0] == "Uploaded 6 items."
@@ -251,18 +252,20 @@ class TestMasonryWorks:
 
     @staticmethod
     @contexts_required
-    def test_upload_walls_when_wrong_file(app_and_db):
-        messages = Wall.upload_walls("test/holes.csv")
+    def test_upload_walls_when_wrong_file(app_and_db, add_investment):
+        investment = Investment.query.first()
+        messages = Wall.upload_walls(investment.id, "test/holes.csv")
         assert len(Wall.query.all()) == 0
-        assert len(messages) == 2
+        assert len(messages) == 1
         assert messages[0] == "Uploaded 0 items."
 
     @staticmethod
     @contexts_required
-    def test_upload_holes(app_and_db):
-        Wall.upload_walls("test/walls.csv")
-        Wall.upload_holes("test/holes.csv")
-        messages = Wall.upload_holes("test/holes.csv")
+    def test_upload_holes(app_and_db, add_investment):
+        investment = Investment.query.first()
+        Wall.upload_walls(investment.id, "test/walls.csv")
+        Wall.upload_holes(investment.id, "test/holes.csv")
+        messages = Wall.upload_holes(investment.id, "test/holes.csv")
         assert len(Hole.query.all()) == 5
         assert len(messages) == 3
         assert messages[0] == "Uploaded 5 items."
@@ -277,10 +280,11 @@ class TestMasonryWorks:
 
     @staticmethod
     @contexts_required
-    def test_upload_processing(app_and_db):
-        Wall.upload_walls("test/walls.csv")
-        Wall.upload_processing("test/processing.csv")
-        messages = Wall.upload_processing("test/processing.csv")
+    def test_upload_processing(app_and_db, add_investment):
+        investment = Investment.query.first()
+        Wall.upload_walls(investment.id, "test/walls.csv")
+        Wall.upload_processing(investment.id, "test/processing.csv")
+        messages = Wall.upload_processing(investment.id, "test/processing.csv")
         assert len(Processing.query.all()) == 6
         assert len(messages) == 4
         assert messages[0] == "Uploaded 6 items."

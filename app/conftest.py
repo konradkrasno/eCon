@@ -63,7 +63,8 @@ def captured_templates(app_and_db):
 
 
 @pytest.fixture
-def wall_data() -> Dict:
+def wall_data(add_investment) -> Dict:
+    investment = Investment.query.first()
     return {
         "sector": "G",
         "level": 2,
@@ -73,6 +74,7 @@ def wall_data() -> Dict:
         "wall_length": 10.5,
         "floor_ord": 3.1,
         "ceiling_ord": 6.2,
+        "invest_id": investment.id,
     }
 
 

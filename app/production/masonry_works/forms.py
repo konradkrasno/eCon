@@ -9,8 +9,8 @@ from wtforms.validators import DataRequired, InputRequired, ValidationError
 from app.models import Wall
 
 
-class AddWallForm(FlaskForm):
-    id = IntegerField("Id")
+class WallForm(FlaskForm):
+    local_id = IntegerField("Id")
     sector = StringField("Sector", validators=[DataRequired()])
     level = StringField("Level", validators=[DataRequired()])
     localization = StringField("Localization")
@@ -21,22 +21,14 @@ class AddWallForm(FlaskForm):
     ceiling_ord = FloatField("Ceiling Ordinate", validators=[InputRequired()])
     submit = SubmitField("Submit")
 
-    def validate_id(self, _id):
-        ids = [wall.id for wall in Wall.query.all()]
-        if _id.data in ids:
+    def __init__(self, invest_id: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.invest_id = invest_id
+
+    def validate_local_id(self, local_id):
+        ids = [wall.local_id for wall in Wall.get_all_items(self.invest_id).all()]
+        if local_id.data in ids:
             raise ValidationError("Id must be unique!")
-
-
-class EditWallForm(FlaskForm):
-    sector = StringField("Sector", validators=[DataRequired()])
-    level = StringField("Level", validators=[DataRequired()])
-    localization = StringField("Localization")
-    brick_type = StringField("Brick Type", validators=[DataRequired()])
-    wall_width = IntegerField("Wall Width", validators=[DataRequired()])
-    wall_length = FloatField("Wall Length", validators=[DataRequired()])
-    floor_ord = FloatField("Floor Ordinate", validators=[InputRequired()])
-    ceiling_ord = FloatField("Ceiling Ordinate", validators=[InputRequired()])
-    submit = SubmitField("Submit")
 
 
 class HoleForm(FlaskForm):

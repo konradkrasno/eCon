@@ -1,10 +1,9 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, g
 from flask_login import login_required
 from app.production.masonry_works import bp
 from app.models import Hole, Processing, Wall
 from app.production.masonry_works.forms import (
-    AddWallForm,
-    EditWallForm,
+    WallForm,
     HoleForm,
     ProcessingForm,
 )
@@ -20,7 +19,7 @@ def walls() -> str:
     localization = request.args.get("localization")
     brick_type = request.args.get("brick_type")
     wall_width = request.args.get("wall_width")
-    items = Wall.query
+    items = Wall.get_all_items(g.current_invest.id)
     if sector:
         items = items.filter_by(sector=sector)
     if level:
@@ -83,9 +82,9 @@ def modify() -> str:
 @bp.route("/add_wall", methods=["GET", "POST"])
 @login_required
 def add_wall() -> str:
-    form = AddWallForm()
+    form = WallForm(g.current_invest.id)
     if form.validate_on_submit():
-        Wall.add_wall(**form.data)
+        Wall.add_wall(g.current_invest.id, **form.data)
         flash("You added a new wall.")
         return redirect(url_for("masonry_works.walls"))
     return render_template(
@@ -134,7 +133,7 @@ def add_processing() -> str:
 def edit_wall() -> str:
     wall_id = request.args.get("wall_id")
     wall = Wall.query.filter_by(id=wall_id).first()
-    form = EditWallForm()
+    form = WallForm(g.current_invest.id)
     if form.validate_on_submit():
         Wall.edit_wall(wall_id, **form.data)
         flash("You modified the wall.")

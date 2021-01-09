@@ -1,9 +1,9 @@
 from flask import url_for
+from flask_login import current_user
 from app.production.masonry_works.data_treatment import Categories, TotalAreas
-from app.models import Wall, Hole, Processing
+from app.models import Wall, Hole, Processing, Investment
 from app.production.masonry_works.forms import (
-    AddWallForm,
-    EditWallForm,
+    WallForm,
     HoleForm,
     ProcessingForm,
 )
@@ -13,6 +13,8 @@ from app.main.forms import WarrantyForm
 class TestWalls:
     @staticmethod
     def test_get(client, captured_templates, test_with_authenticated_user, add_wall):
+        investment = Investment.query.filter_by(name="Test Invest").first()
+        current_user.current_invest_id = investment.id
         response = client.get(url_for("masonry_works.walls"))
         assert response.status_code == 200
         assert len(captured_templates) == 1
@@ -82,11 +84,11 @@ class TestAddWall:
         template, context = captured_templates[0]
         assert template.name == "production/masonry_works/forms/wall_form.html"
         assert context["title"] == "Add Wall"
-        assert isinstance(context["form"], AddWallForm)
+        assert isinstance(context["form"], WallForm)
 
     @staticmethod
     def test_post(client, test_with_authenticated_user, wall_data):
-        form = AddWallForm(**wall_data)
+        form = WallForm(**wall_data)
         assert not Wall.query.all()
         response = client.post(
             url_for("masonry_works.add_wall"), data=form.data, follow_redirects=True
@@ -158,7 +160,7 @@ class TestEditWall:
         template, context = captured_templates[0]
         assert template.name == "production/masonry_works/forms/wall_form.html"
         assert context["title"] == "Edit Wall"
-        assert isinstance(context["form"], EditWallForm)
+        assert isinstance(context["form"], WallForm)
         assert context["form"].sector.data == wall.sector
         assert context["form"].level.data == wall.level
         assert context["form"].localization.data == wall.localization
@@ -169,9 +171,10 @@ class TestEditWall:
         assert context["form"].ceiling_ord.data == wall.ceiling_ord
 
     @staticmethod
-    def test_post(client, test_with_authenticated_user, wall_data, add_wall):
+    def test_post(client, test_with_authenticated_user, wall_data):
+        Wall.add_wall(**wall_data)
         wall_data["sector"] = "A"
-        form = EditWallForm(**wall_data)
+        form = WallForm(**wall_data)
         wall = Wall.query.first()
         assert wall.sector == "G"
         response = client.post(

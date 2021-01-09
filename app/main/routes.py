@@ -5,9 +5,10 @@ from flask import (
     redirect,
     url_for,
     request,
+    g,
 )
 from werkzeug.utils import secure_filename
-from flask_login import current_user, login_required
+from flask_login import login_required
 from config import config
 from app.main import bp
 from app.loading_csv import remove_file
@@ -90,11 +91,11 @@ def upload_file(model: str) -> str:
 def uploaded_file(filename: str, model: str) -> str:
     messages = []
     if model == "walls":
-        messages = Wall.upload_walls(filename)
+        messages = Wall.upload_walls(g.current_invest.id, filename)
     elif model == "holes":
-        messages = Wall.upload_holes(filename)
+        messages = Wall.upload_holes(g.current_invest.id, filename)
     elif model == "processing":
-        messages = Wall.upload_processing(filename)
+        messages = Wall.upload_processing(g.current_invest.id, filename)
     for message in messages:
         flash(message)
     remove_file(filename)
