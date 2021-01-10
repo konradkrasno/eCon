@@ -228,9 +228,20 @@ class Task(db.Model):
     )
 
     @classmethod
-    def get_all(cls, invest_id: int) -> List:
+    def get_in_progress(cls, invest_id: int) -> List:
         return (
             Task.query.filter_by(investment_id=invest_id)
+            .filter(cls.progress != 100)
+            .order_by(Task.deadline)
+            .order_by(Task.priority.desc())
+            .all()
+        )
+
+    @classmethod
+    def get_realized(cls, invest_id: int) -> List:
+        return (
+            Task.query.filter_by(investment_id=invest_id)
+            .filter(cls.progress == 100)
             .order_by(Task.deadline)
             .order_by(Task.priority.desc())
             .all()

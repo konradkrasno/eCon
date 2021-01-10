@@ -43,7 +43,8 @@
 <main>
   <div class="table-responsive">
     {% if g.current_invest.name %}
-        {% if tasks %}
+        {% if tasks_in_progress %}
+        <h5>Tasks in progress</h5><br>
         <table class="table table-striped">
           <thead>
             <tr>
@@ -58,7 +59,7 @@
             </tr>
           </thead>
           <tbody>
-        {% for task in tasks %}
+        {% for task in tasks_in_progress %}
           <tr>
               <td class="text-center">{{ task.description }}</td>
               <td class="text-center">{{ task.deadline.strftime('%Y-%m-%d') }}</td>
@@ -102,8 +103,65 @@
         <p>No tasks added yet.</p>
       {% endif %}
   {% endif %}
+    {% if g.current_invest.name %}
+        {% if realized_tasks %}
+        <h5>Realized tasks</h5><br>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th class="text-center">Description</th>
+              <th class="text-center">Deadline</th>
+                <th class="text-center">Priority</th>
+                <th class="text-center">Orderer</th>
+                <th class="text-center">Executor</th>
+                <th class="text-center">Progress</th>
+                <th class="text-center">Creation Date</th>
+                <th class="text-center"></th>
+            </tr>
+          </thead>
+          <tbody>
+        {% for task in realized_tasks %}
+          <tr>
+              <td class="text-center">{{ task.description }}</td>
+              <td class="text-center">{{ task.deadline.strftime('%Y-%m-%d') }}</td>
+              <td class="text-center">{{ task.priority }}</td>
+              <td class="text-center">
+                  <a href="{{ url_for('main.user', username=task.orderer.users.username) }}" >
+                      {{ task.orderer.users.username }}
+                  </a>
+              </td>
+              <td class="text-center">
+                  <a href="{{ url_for('main.user', username=task.executor.users.username) }}" >
+                      {{ task.executor.users.username }}
+                  </a>
+              </td>
+              <td class="text-center">{{ task.progress }}</td>
+              <td class="text-center">{{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td class="text-center">
+                  <div class="btn-toolbar mb-2 mb-md-0">
+                      <div class="btn-group mr-1">
+                          {% if admin %}
+                          {% if task.orderer.user_id == current_user.id %}
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
+                              <a href="{{ url_for('tasks.edit_task', _id=task.id, next_page=next_page) }}">Edit</a>
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
+                              <a href="{{ url_for('tasks.delete_task', _id=task.id, next_page=next_page) }}">Delete</a>
+                          </button>
+                          {% endif %}
+                          {% endif %}
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
+                              <a href="{{ url_for('tasks.change_progress', _id=task.id, next_page=next_page) }}">Change Progress</a>
+                          </button>
+                      </div>
+                  </div>
+              </td>
+          </tr>
+        {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+  {% endif %}
   </div>
-
 </main>
-
 {% endblock %}

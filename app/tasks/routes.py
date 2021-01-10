@@ -11,26 +11,48 @@ from app.main.forms import WarrantyForm
 @bp.route("/")
 @login_required
 def tasks():
-    tasks = Task.get_all(invest_id=g.current_invest.id)
+    tasks_in_progress = Task.get_in_progress(invest_id=g.current_invest.id)
+    realized_tasks = Task.get_realized(invest_id=g.current_invest.id)
     admin = Worker.is_admin(user_id=current_user.id, investment_id=g.current_invest.id)
     next_page = url_for("tasks.tasks")
     return render_template(
-        "tasks/tasks.html", title="Tasks", tasks=tasks, admin=admin, next_page=next_page
+        "tasks/tasks.html",
+        title="Tasks",
+        tasks_in_progress=tasks_in_progress,
+        realized_tasks=realized_tasks,
+        admin=admin,
+        next_page=next_page,
     )
 
 
 @bp.route("/my")
 @login_required
 def my_tasks():
-    tasks = Worker.get_by_username(
-        invest_id=g.current_invest.id, username=current_user.username
-    ).tasks_to_execution.order_by(Task.deadline).order_by(Task.priority.desc()).all()
+    tasks_in_progress = (
+        Worker.get_by_username(
+            invest_id=g.current_invest.id, username=current_user.username
+        )
+        .tasks_to_execution.filter(Task.progress != 100)
+        .order_by(Task.deadline)
+        .order_by(Task.priority.desc())
+        .all()
+    )
+    realized_tasks = (
+        Worker.get_by_username(
+            invest_id=g.current_invest.id, username=current_user.username
+        )
+        .tasks_to_execution.filter(Task.progress == 100)
+        .order_by(Task.deadline)
+        .order_by(Task.priority.desc())
+        .all()
+    )
     admin = Worker.is_admin(user_id=current_user.id, investment_id=g.current_invest.id)
     next_page = url_for("tasks.my_tasks")
     return render_template(
         "tasks/tasks.html",
         title="My Tasks",
-        tasks=tasks,
+        tasks_in_progress=tasks_in_progress,
+        realized_tasks=realized_tasks,
         admin=admin,
         next_page=next_page,
     )
@@ -39,15 +61,31 @@ def my_tasks():
 @bp.route("/deputed")
 @login_required
 def deputed_tasks():
-    tasks = Worker.get_by_username(
-        invest_id=g.current_invest.id, username=current_user.username
-    ).deputed_tasks.order_by(Task.deadline).order_by(Task.priority.desc()).all()
+    tasks_in_progress = (
+        Worker.get_by_username(
+            invest_id=g.current_invest.id, username=current_user.username
+        )
+        .deputed_tasks.filter(Task.progress != 100)
+        .order_by(Task.deadline)
+        .order_by(Task.priority.desc())
+        .all()
+    )
+    realized_tasks = (
+        Worker.get_by_username(
+            invest_id=g.current_invest.id, username=current_user.username
+        )
+        .deputed_tasks.filter(Task.progress == 100)
+        .order_by(Task.deadline)
+        .order_by(Task.priority.desc())
+        .all()
+    )
     admin = Worker.is_admin(user_id=current_user.id, investment_id=g.current_invest.id)
     next_page = url_for("tasks.deputed_tasks")
     return render_template(
         "tasks/tasks.html",
         title="Deputed Tasks",
-        tasks=tasks,
+        tasks_in_progress=tasks_in_progress,
+        realized_tasks=realized_tasks,
         admin=admin,
         next_page=next_page,
     )

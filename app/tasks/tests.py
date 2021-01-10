@@ -13,13 +13,15 @@ class TestTasks:
         current_user.current_invest_id = investment.id
         task1 = Task.query.filter_by(description="test task 1").first()
         task2 = Task.query.filter_by(description="test task 2").first()
+        task3 = Task.query.filter_by(description="test task 3").first()
         response = client.get(url_for("tasks.tasks"))
         assert response.status_code == 200
         assert len(captured_templates) == 1
         template, context = captured_templates[0]
         assert template.name == "tasks/tasks.html"
         assert context["title"] == "Tasks"
-        assert context["tasks"] == [task1, task2]
+        assert context["tasks_in_progress"] == [task1, task2]
+        assert context["realized_tasks"] == [task3]
         assert context["admin"]
         assert context["next_page"] == url_for("tasks.tasks")
 
@@ -30,13 +32,15 @@ class MyTasks:
         investment = Investment.query.filter_by(name="Test Invest").first()
         current_user.current_invest_id = investment.id
         task2 = Task.query.filter_by(description="test task 2").first()
+        task3 = Task.query.filter_by(description="test task 3").first()
         response = client.get(url_for("tasks.my_tasks"))
         assert response.status_code == 200
         assert len(captured_templates) == 1
         template, context = captured_templates[0]
         assert template.name == "tasks/tasks.html"
         assert context["title"] == "My Tasks"
-        assert context["tasks"] == [task2]
+        assert context["tasks_in_progress"] == [task2]
+        assert context["realized_tasks"] == [task3]
         assert context["admin"]
         assert context["next_page"] == url_for("tasks.my_tasks")
 
@@ -48,13 +52,15 @@ class DeputedTasks:
         current_user.current_invest_id = investment.id
         task1 = Task.query.filter_by(description="test task 1").first()
         task2 = Task.query.filter_by(description="test task 2").first()
+        task3 = Task.query.filter_by(description="test task 3").first()
         response = client.get(url_for("tasks.deputed_tasks"))
         assert response.status_code == 200
         assert len(captured_templates) == 1
         template, context = captured_templates[0]
         assert template.name == "tasks/tasks.html"
         assert context["title"] == "Deputed Tasks"
-        assert context["tasks"] == [task1, task2]
+        assert context["tasks_in_progress"] == [task1, task2]
+        assert context["realized_tasks"] == [task3]
         assert context["admin"]
         assert context["next_page"] == url_for("tasks.deputed_tasks")
 

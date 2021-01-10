@@ -120,6 +120,7 @@ def add_tasks(app_and_db, add_investment):
         deadline=datetime.date(2021, 1, 12),
         orderer=worker1,
         executor=worker2,
+        progress=0,
         investment_id=investment.id,
     )
     task2 = Task(
@@ -128,11 +129,22 @@ def add_tasks(app_and_db, add_investment):
         deadline=datetime.date(2021, 1, 12),
         orderer=worker1,
         executor=worker1,
+        progress=0,
+        investment_id=investment.id,
+    )
+    task3 = Task(
+        description="test task 3",
+        created_at=datetime.datetime.utcnow(),
+        deadline=datetime.date(2021, 1, 12),
+        orderer=worker1,
+        executor=worker1,
+        progress=100,
         investment_id=investment.id,
     )
     db = app_and_db[1]
     db.session.add(task1)
     db.session.add(task2)
+    db.session.add(task3)
     db.session.commit()
 
 

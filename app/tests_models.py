@@ -567,9 +567,10 @@ class TestTask:
         worker2 = Worker.query.filter_by(position="second worker").first()
         task1 = Task.query.filter_by(description="test task 1").first()
         task2 = Task.query.filter_by(description="test task 2").first()
+        task3 = Task.query.filter_by(description="test task 3").first()
 
-        assert worker1.deputed_tasks.all() == [task1, task2]
-        assert worker1.tasks_to_execution.all() == [task2]
+        assert worker1.deputed_tasks.all() == [task1, task2, task3]
+        assert worker1.tasks_to_execution.all() == [task2, task3]
         assert worker2.deputed_tasks.all() == []
         assert worker2.tasks_to_execution.all() == [task1]
-        assert investment.tasks.all() == [task1, task2]
+        assert investment.tasks.all() == [task1, task2, task3]
