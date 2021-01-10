@@ -9,7 +9,7 @@ storage of documents, and calculation of the quantity survey of works.
 - [x] Creating workers and team
 - [x] Creating a tool for quantity survey of masonry works
 - [ ] Creating a custom page for quantity survey of works
-- [ ] Creating tasks for team members
+- [x] Creating tasks for team members
 - [ ] Creating chat for team members
 - [ ] Creating documents archiving
 
