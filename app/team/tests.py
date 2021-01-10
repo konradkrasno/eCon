@@ -12,8 +12,7 @@ class TestTeam:
         client, captured_templates, test_with_authenticated_user, add_investment
     ):
         investment = Investment.query.filter_by(name="Test Invest").first()
-        user = User.query.filter_by(username="active_user").first()
-        user.current_invest_id = investment.id
+        current_user.current_invest_id = investment.id
         worker1 = Worker.query.filter_by(position="admin").first()
         worker2 = Worker.query.filter_by(position="second worker").first()
         response = client.get(url_for("team.team"))
@@ -74,8 +73,7 @@ class TestAddWorker:
     ):
         mocker.patch("app.auth.email.send_complete_registration_mail")
         investment = Investment.query.filter_by(name="Test Invest").first()
-        user = User.query.filter_by(username="active_user").first()
-        user.current_invest_id = investment.id
+        current_user.current_invest_id = investment.id
         form = CreateWorkerForm(
             email="active_user@email.com", position="new position", admin=False
         )

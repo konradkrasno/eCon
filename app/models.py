@@ -103,12 +103,35 @@ class Worker(db.Model):
     investment_id = db.Column(
         db.Integer, db.ForeignKey("investments.id", ondelete="CASCADE")
     )
+    deputed_tasks = db.relationship(
+        "Task",
+        primaryjoin="(Worker.id == Task.orderer_id)",
+        lazy="dynamic",
+        cascade="all, delete",
+        passive_deletes=True,
+    )
+    tasks_to_execution = db.relationship(
+        "Task",
+        primaryjoin="(Worker.id == Task.executor_id)",
+        lazy="dynamic",
+        cascade="all, delete",
+        passive_deletes=True,
+    )
+
+    @classmethod
+    def get_by_username(cls, invest_id: int, username: str) -> db.Model:
+        return (
+            cls.query.filter_by(investment_id=invest_id)
+            .join(User, User.id == cls.user_id)
+            .filter_by(username=username)
+            .first()
+        )
 
     @classmethod
     def belongs_to_investment(cls, email: str, investment_id: int) -> bool:
         return (
             cls.query.filter_by(investment_id=investment_id)
-            .join(User, User.id == Worker.user_id)
+            .join(User, User.id == cls.user_id)
             .filter_by(email=email)
             .first()
             is not None
@@ -142,7 +165,20 @@ class Investment(db.Model):
         cascade="all, delete",
         passive_deletes=True,
     )
-    # masonry_registry = db.relationship("Wall", backref="investment", lazy="dynamic")
+    tasks = db.relationship(
+        "Task",
+        backref="investments",
+        lazy="dynamic",
+        cascade="all, delete",
+        passive_deletes=True,
+    )
+    masonry_registry = db.relationship(
+        "Wall",
+        backref="investments",
+        lazy="dynamic",
+        cascade="all, delete",
+        passive_deletes=True,
+    )
 
     @classmethod
     def get_by_user_id(cls, user_id: int) -> db.Model:
@@ -172,6 +208,36 @@ class Investment(db.Model):
 
     def __repr__(self) -> str:
         return "<Investment(name=%s)>" % (self.name,)
+
+
+class Task(db.Model):
+    __tablename__ = "tasks"
+
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(128))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow())
+    deadline = db.Column(db.Date)
+    priority = db.Column(db.Integer)
+    orderer_id = db.Column(db.Integer, db.ForeignKey("workers.id", ondelete="CASCADE"))
+    executor_id = db.Column(db.Integer, db.ForeignKey("workers.id", ondelete="CASCADE"))
+    orderer = db.relationship("Worker", foreign_keys=[orderer_id])
+    executor = db.relationship("Worker", foreign_keys=[executor_id])
+    progress = db.Column(db.Integer)
+    investment_id = db.Column(
+        db.Integer, db.ForeignKey("investments.id", ondelete="CASCADE")
+    )
+
+    @classmethod
+    def get_all(cls, invest_id: int) -> List:
+        return (
+            Task.query.filter_by(investment_id=invest_id)
+            .order_by(Task.deadline)
+            .order_by(Task.priority.desc())
+            .all()
+        )
+
+    def __repr__(self) -> str:
+        return "<Task(description=%s)>" % (self.description,)
 
 
 class Hole(db.Model):
@@ -281,7 +347,9 @@ class Wall(db.Model):
         cascade="all, delete",
         passive_deletes=True,
     )
-    investment_id = db.Column(db.Integer, db.ForeignKey("investments.id"))
+    investment_id = db.Column(
+        db.Integer, db.ForeignKey("investments.id", ondelete="CASCADE")
+    )
 
     @hybrid_property
     def wall_height(self):

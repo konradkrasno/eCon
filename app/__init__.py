@@ -40,6 +40,10 @@ def create_app(app_config=config):
 
     app.register_blueprint(team_bp, url_prefix="/team")
 
+    from app.tasks import bp as tasks_bp
+
+    app.register_blueprint(tasks_bp, url_prefix="/tasks")
+
     from app.production.masonry_works import bp as masonry_works_bp
 
     app.register_blueprint(masonry_works_bp, url_prefix="/masonry_works")

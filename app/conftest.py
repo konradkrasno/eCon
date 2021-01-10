@@ -2,12 +2,13 @@ from typing import *
 
 import pytest
 import os
+import datetime
 
 from contextlib import contextmanager
 from flask import template_rendered
 from app import create_app, db, login
 from config import config, BASE_DIR
-from app.models import Wall, User, Investment, Worker
+from app.models import Wall, User, Investment, Worker, Task
 
 
 contexts_required = pytest.mark.skipif(
@@ -105,6 +106,33 @@ def add_investment(app_and_db, active_user, unlogged_user):
     investment.workers.append(worker1)
     investment.workers.append(worker2)
     db.session.add(investment)
+    db.session.commit()
+
+
+@pytest.fixture
+def add_tasks(app_and_db, add_investment):
+    investment = Investment.query.first()
+    worker1 = Worker.query.filter_by(position="admin").first()
+    worker2 = Worker.query.filter_by(position="second worker").first()
+    task1 = Task(
+        description="test task 1",
+        created_at=datetime.datetime.utcnow(),
+        deadline=datetime.date(2021, 1, 12),
+        orderer=worker1,
+        executor=worker2,
+        investment_id=investment.id,
+    )
+    task2 = Task(
+        description="test task 2",
+        created_at=datetime.datetime.utcnow(),
+        deadline=datetime.date(2021, 1, 12),
+        orderer=worker1,
+        executor=worker1,
+        investment_id=investment.id,
+    )
+    db = app_and_db[1]
+    db.session.add(task1)
+    db.session.add(task2)
     db.session.commit()
 
 

@@ -1,6 +1,6 @@
 import pytest
 
-from app.models import Hole, Processing, Wall, User, Investment, Worker
+from app.models import Hole, Processing, Wall, User, Investment, Worker, Task
 from app.conftest import contexts_required
 
 
@@ -557,3 +557,19 @@ class TestUser:
         worker2 = Worker.query.filter_by(position="pos2").first()
 
         assert User.get_workers(user_id=1) == [worker1, worker2]
+
+
+class TestTask:
+    @staticmethod
+    def test_task(add_tasks):
+        investment = Investment.query.first()
+        worker1 = Worker.query.filter_by(position="admin").first()
+        worker2 = Worker.query.filter_by(position="second worker").first()
+        task1 = Task.query.filter_by(description="test task 1").first()
+        task2 = Task.query.filter_by(description="test task 2").first()
+
+        assert worker1.deputed_tasks.all() == [task1, task2]
+        assert worker1.tasks_to_execution.all() == [task2]
+        assert worker2.deputed_tasks.all() == []
+        assert worker2.tasks_to_execution.all() == [task1]
+        assert investment.tasks.all() == [task1, task2]
