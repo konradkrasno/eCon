@@ -22,12 +22,6 @@ def index() -> str:
     return render_template("index.html", title="Home")
 
 
-@bp.route("/production")
-@login_required
-def production() -> str:
-    return render_template("production/production.html", title="Production")
-
-
 @bp.route("/documents")
 @login_required
 def documents() -> str:
