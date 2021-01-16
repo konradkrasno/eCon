@@ -104,7 +104,6 @@ def add_task():
         db.session.add(
             Task(
                 description=form.description.data,
-                created_at=datetime.datetime.utcnow(),
                 deadline=form.deadline.data,
                 priority=form.priority.data,
                 orderer=orderer,

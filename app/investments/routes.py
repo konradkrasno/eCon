@@ -11,7 +11,7 @@ from app.models import Investment, Worker
 @bp.before_app_request
 def before_request():
     if current_user.is_authenticated:
-        g.current_invest = Investment.get_current_invest(current_user)
+        g.current_invest = current_user.get_current_invest()
 
 
 @bp.route("/")
@@ -34,7 +34,6 @@ def create() -> str:
         investment = Investment(
             name=form.name.data,
             description=form.description.data,
-            created_at=datetime.utcnow(),
         )
         worker = Worker(
             position="admin",

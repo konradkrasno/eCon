@@ -399,14 +399,14 @@ class TestInvestment:
         db.session.commit()
 
         user = User.query.filter_by(username="active_user").first()
-        current_invest = Investment.get_current_invest(user)
+        current_invest = user.get_current_invest()
         print(type(current_invest))
         assert current_invest.name == "Test Investment"
 
     @staticmethod
     def test_get_current_invest_when_no_investment(app_and_db, active_user):
         user = User.query.filter_by(username="active_user").first()
-        current_invest = Investment.get_current_invest(user)
+        current_invest = user.get_current_invest()
         assert current_invest.name == None
 
     @staticmethod

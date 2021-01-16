@@ -84,6 +84,16 @@ class User(UserMixin, db.Model):
 
         return Worker.query.filter_by(user_id=user_id).all()
 
+    def get_current_invest(self) -> db.Model:
+        investment = (
+            Investment.query.join(Worker, Worker.investment_id == Investment.id)
+            .filter_by(user_id=self.id, investment_id=self.current_invest_id)
+            .first()
+        )
+        if investment:
+            return investment
+        return Investment()
+
     def __repr__(self) -> str:
         return "<User(username=%s)>" % (self.username,)
 
@@ -157,7 +167,7 @@ class Investment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128))
     description = db.Column(db.Text())
-    created_at = db.Column(db.DateTime, default=datetime.utcnow())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     workers = db.relationship(
         "Worker",
         backref="investments",
@@ -189,17 +199,6 @@ class Investment(db.Model):
             .all()
         )
 
-    @classmethod
-    def get_current_invest(cls, user: User) -> db.Model:
-        investment = (
-            Investment.query.join(Worker, Worker.investment_id == Investment.id)
-            .filter_by(user_id=user.id, investment_id=user.current_invest_id)
-            .first()
-        )
-        if investment:
-            return investment
-        return Investment()
-
     @staticmethod
     def get_num_of_admins(investment_id: int) -> int:
         return len(
@@ -215,7 +214,7 @@ class Task(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(128))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     deadline = db.Column(db.Date)
     priority = db.Column(db.Integer)
     orderer_id = db.Column(db.Integer, db.ForeignKey("workers.id", ondelete="CASCADE"))
