@@ -36,13 +36,15 @@ cd eCon
 Create .env file:
 ```
 SECRET_KEY=<your-secret-key>
-DATABASE_URL=<postgresql+psycopg2://username:password@host:port/database>
 MAIL_SERVER=<your-mail-server>
 MAIL_PORT=<your-mail-port>
 MAIL_USE_TLS=<1 or 0>
 MAIL_USERNAME=<your-mail-username>
 MAIL_PASSWORD=<you-mail-password>
 MAIL_DEFAULT_SENDER=<default-sender>
+
+# Default postgres db
+DATABASE_URL=postgresql+psycopg2://postgres:password@postgres:5432
 ```
 Start docker containers:
 ```bash
