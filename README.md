@@ -33,10 +33,6 @@ Clone the repository:
 git clone https://github.com/konradkrasno/eCon.git
 cd eCon
 ```
-Install requirements:
-```bash
-pip3 install -r requirements.txt
-```
 Create .env file:
 ```
 SECRET_KEY=<your-secret-key>
@@ -48,11 +44,12 @@ MAIL_USERNAME=<your-mail-username>
 MAIL_PASSWORD=<you-mail-password>
 MAIL_DEFAULT_SENDER=<default-sender>
 ```
+Start docker containers:
+```bash
+docker-compose up -d
+```
 Run tests:
 ```bash
+docker exec -it web bash
 pytest
-```
-Run application:
-```bash
-flask run
 ```

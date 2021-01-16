@@ -221,7 +221,7 @@ class Task(db.Model):
     executor_id = db.Column(db.Integer, db.ForeignKey("workers.id", ondelete="CASCADE"))
     orderer = db.relationship("Worker", foreign_keys=[orderer_id])
     executor = db.relationship("Worker", foreign_keys=[executor_id])
-    progress = db.Column(db.Integer)
+    progress = db.Column(db.Integer, default=0)
     investment_id = db.Column(
         db.Integer, db.ForeignKey("investments.id", ondelete="CASCADE")
     )
@@ -508,10 +508,16 @@ class Wall(db.Model):
         Processing.query.filter_by(id=model_id).delete()
         db.session.commit()
 
+    @staticmethod
+    def check_if_csv(filename: str) -> bool:
+        return "." in filename and filename.rsplit(".", 1)[1].lower() == "csv"
+
     @classmethod
     def upload_walls(cls, invest_id: int, filename: str) -> List:
         success = 0
         failures = []
+        if not cls.check_if_csv(filename):
+            return ["Wrong file format. File must be in csv format."]
         try:
             file = read_csv_file(filename)
         except Exception as e:
@@ -552,6 +558,8 @@ class Wall(db.Model):
         failures = []
         no_wall = []
         wall_ids = []
+        if not cls.check_if_csv(filename):
+            return ["Wrong file format. File must be in csv format."]
         try:
             file = read_csv_file(filename)
         except Exception as e:
@@ -598,6 +606,8 @@ class Wall(db.Model):
         no_wall = []
         no_left = []
         wall_ids = []
+        if not cls.check_if_csv(filename):
+            return ["Wrong file format. File must be in csv format."]
         try:
             file = read_csv_file(filename)
         except Exception as e:

@@ -1,0 +1,51 @@
+version: "3.7"
+
+services:
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:3-management-alpine
+    container_name: rabbit
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: worker
+    links:
+      - rabbit
+    depends_on:
+      - rabbit
+    volumes:
+      - .:/econ
+    working_dir: /econ
+    command: celery worker -l info -A app.app_tasks.tasks
+
+  postgres:
+    hostname: postgres
+    image: postgres
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: password
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web
+    depends_on:
+      - postgres
+      - rabbit
+    env_file:
+      - ".env"
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/econ
+    working_dir: /econ
+    command: ./boot.sh
