@@ -10,14 +10,16 @@ from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user, login_user
 from config import config
 from app.main import bp
-from app.loading_csv import save_file, remove_file
+from app.handling_files import save_file, handle_file
 from app.models import Wall, User
 from app.main.populate_db import populate_db
 
 
 @bp.before_app_first_request
 def before_first_request():
-    populate_db()
+    if not User.query.filter_by(username="Guest").first():
+        populate_db()
+
 
 @bp.route("/")
 @bp.route("/index")
@@ -57,45 +59,32 @@ def allowed_file(filename: str) -> bool:
 def upload_file(model: str) -> str:
     if request.method == "POST":
         if "file" not in request.files:
-            flash("No file part")
+            flash("No file part.")
             return redirect(request.url)
         file = request.files["file"]
         if file.filename == "":
-            flash("No selected file")
+            flash("No selected file.")
             return redirect(request.url)
         if not g.current_invest.id:
             flash("Choose investment first.")
-            return redirect(request.url)
+            return redirect(url_for("investments.invest_list"))
         if file and allowed_file(file.filename):
+            temp = request.args.get("temp", False)
+            catalog = request.args.get("catalog", "")
             filename = secure_filename(file.filename)
-            save_file(file, current_user.id, g.current_invest.id, filename)
-            return redirect(
-                url_for("main.uploaded_file", filename=filename, model=model)
-            )
+            try:
+                save_file(file, filename, temp, catalog)
+            except FileExistsError:
+                flash("File with this name already exists.")
+            else:
+                messages = handle_file(filename, model, Wall)
+                for message in messages:
+                    flash(message)
+            next_url = request.args.get("next_url")
+            if next_url is None:
+                next_url = url_for("main.index")
+            return redirect(next_url)
     return render_template("upload_file_form.html")
-
-
-@bp.route("/uploads/<string:filename>/<string:model>")
-@login_required
-def uploaded_file(filename: str, model: str) -> str:
-    if not g.current_invest.id:
-        flash("Choose investment first.")
-        return redirect(request.url)
-    messages = []
-    if model == "walls":
-        messages = Wall.upload_walls(g.current_invest.id, filename)
-    elif model == "holes":
-        messages = Wall.upload_holes(g.current_invest.id, filename)
-    elif model == "processing":
-        messages = Wall.upload_processing(g.current_invest.id, filename)
-    elif model == "new_file":
-        messages = ["New file uploaded successfully."]
-    for message in messages:
-        flash(message)
-    if model == "new_file":
-        return redirect(url_for("documents.documents"))
-    remove_file(current_user.id, g.current_invest.id, filename)
-    return redirect(url_for("masonry_works.walls"))
 
 
 @bp.route("/guest", methods=["GET", "POST"])

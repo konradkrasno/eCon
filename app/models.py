@@ -15,7 +15,7 @@ from app.validators import (
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from wtforms.validators import ValidationError
-from app.loading_csv import read_csv_file
+from app.handling_files import read_csv_file
 
 
 class User(UserMixin, db.Model):

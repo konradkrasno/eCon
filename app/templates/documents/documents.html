@@ -4,14 +4,25 @@
 {% block button_content %}
 
 <div class="btn-toolbar mb-2 mb-md-0">
-  <div class="btn-group mr-2">
-    <button type="button" class="btn btn-sm btn-outline-secondary">
-      <a href="{{ url_for('documents.new_folder') }}">Add new folder</a>
-    </button>
-    <button type="button" class="btn btn-sm btn-outline-secondary">
-      <a href="{{ url_for('main.upload_file', model='new_file') }}">Add new file</a>
-    </button>
-  </div>
+  {% if g.current_invest.name %}
+      <div class="btn-group mr-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ url_for('documents.new_folder', folder_path='') }}">Add new folder</a>
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ url_for('main.upload_file', model='new_file', next_url=url_for('documents.documents')) }}">Add new file</a>
+        </button>
+      </div>
+      {% else %}
+        <div class="container">
+          <h6>No Investment selected.</h6><br>
+        </div>
+        <div class="btn-group mr-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+              <a href="{{ url_for('investments.invest_list') }}">Select Investment</a>
+            </button>
+        </div>
+      {% endif %}
 </div>
 
 {% endblock %}
@@ -19,6 +30,7 @@
 
 <main>
       <div class="table-responsive">
+    {% if g.current_invest.name %}
         <table class="table table-striped table-sm small">
           <thead>
             <tr>
@@ -27,14 +39,14 @@
             </tr>
           </thead>
           <tbody>
-		  {% for file in files %}
+		  {% for path in paths %}
 		  <tr>
-		      <td class="text-center">{{ file }}</td>
+		      <td class="text-center">{{ path }}</td>
 		      <td class="text-center">
                   <div class="btn-toolbar mb-2 mb-md-0">
                       <div class="btn-group mr-1">
                           <button type="button" class="btn btn-sm btn-outline-secondary">
-                            <a href="{{ url_for('documents.delete_file', filepath=file) }}">Delete</a>
+                            <a href="{{ url_for('documents.delete', path=path) }}">Delete</a>
                           </button>
                       </div>
                   </div>
@@ -43,6 +55,7 @@
 		  {% endfor %}
           </tbody>
         </table>
+    {% endif %}
       </div>
 </main>
 

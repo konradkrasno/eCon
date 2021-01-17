@@ -38,8 +38,8 @@ def populate_db() -> None:
         description="Less important task",
         deadline=date.today() + timedelta(days=1),
         priority=2,
-        orderer=worker2,
-        executor=worker3,
+        orderer=worker3,
+        executor=worker2,
     )
 
     invest = Investment(name="Bungalow", description="LA, California")
@@ -49,7 +49,4 @@ def populate_db() -> None:
     invest.tasks.append(task1)
     invest.tasks.append(task2)
     db.session.add(invest)
-    try:
-        db.session.commit()
-    except IntegrityError:
-        db.session.rollback()
+    db.session.commit()

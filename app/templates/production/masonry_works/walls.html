@@ -9,13 +9,13 @@
       <a href="{{ url_for('masonry_works.add_wall') }}">Add new wall</a>
     </button>
     <button type="button" class="btn btn-sm btn-outline-secondary">
-      <a href="{{ url_for('main.upload_file', model='walls') }}">Upload walls from csv</a>
+      <a href="{{ url_for('main.upload_file', model='walls', temp=True, next_url=url_for('masonry_works.walls')) }}">Upload walls from csv</a>
     </button>
     <button type="button" class="btn btn-sm btn-outline-secondary">
-      <a href="{{ url_for('main.upload_file', model='holes') }}">Upload holes from csv</a>
+      <a href="{{ url_for('main.upload_file', model='holes', temp=True, next_url=url_for('masonry_works.walls')) }}">Upload holes from csv</a>
     </button>
     <button type="button" class="btn btn-sm btn-outline-secondary">
-      <a href="{{ url_for('main.upload_file', model='processing') }}">Upload processing from csv</a>
+      <a href="{{ url_for('main.upload_file', model='processing', temp=True, next_url=url_for('masonry_works.walls')) }}">Upload processing from csv</a>
     </button>
     <button type="button" class="btn btn-sm btn-outline-secondary">Export to csv</button>
   </div>
