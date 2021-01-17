@@ -3,6 +3,12 @@ A platform to gather the construction site management aspects in one place.
 It allows you to manage team tasks, communication between team members,
 storage of documents, and calculation of the quantity survey of works.
 
+### Dependencies
+* Flask
+* Sqlalchemy
+* Celery
+* Docker
+
 ### Design goals
 - [x] Registering users and their authorization
 - [x] Creating and managing projects
