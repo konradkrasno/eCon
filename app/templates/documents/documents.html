@@ -10,7 +10,7 @@
           <a href="{{ url_for('documents.new_folder', folder_path='') }}">Add new folder</a>
         </button>
         <button type="button" class="btn btn-sm btn-outline-secondary">
-          <a href="{{ url_for('main.upload_file', model='new_file', next_url=url_for('documents.documents')) }}">Add new file</a>
+          <a href="{{ url_for('main.upload_files', model='new_file', next_url=url_for('documents.documents')) }}">Add new files</a>
         </button>
       </div>
       {% else %}

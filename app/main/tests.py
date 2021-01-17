@@ -23,3 +23,13 @@ class TestUser:
         assert template.name == "user.html"
         assert context["title"] == "Profile Page"
         assert context["user"] == User.query.filter_by(username="test_user").first()
+
+
+class TestUploadFiles:
+    @staticmethod
+    def test_get(client, captured_templates, test_with_authenticated_user):
+        pass
+
+    @staticmethod
+    def test_post(client, test_with_authenticated_user):
+        pass

@@ -7,7 +7,7 @@ from flask import (
     g,
 )
 from werkzeug.utils import secure_filename
-from flask_login import login_required, current_user, login_user
+from flask_login import login_required, login_user
 from config import config
 from app.main import bp
 from app.handling_files import save_file, handle_file
@@ -54,36 +54,37 @@ def allowed_file(filename: str) -> bool:
     )
 
 
-@bp.route("/upload_file/<string:model>", methods=["GET", "POST"])
+@bp.route("/upload_files/<string:model>", methods=["GET", "POST"])
 @login_required
-def upload_file(model: str) -> str:
+def upload_files(model: str) -> str:
     if request.method == "POST":
-        if "file" not in request.files:
-            flash("No file part.")
-            return redirect(request.url)
-        file = request.files["file"]
-        if file.filename == "":
-            flash("No selected file.")
-            return redirect(request.url)
         if not g.current_invest.id:
             flash("Choose investment first.")
             return redirect(url_for("investments.invest_list"))
-        if file and allowed_file(file.filename):
-            temp = request.args.get("temp", False)
-            catalog = request.args.get("catalog", "")
-            filename = secure_filename(file.filename)
-            try:
-                save_file(file, filename, temp, catalog)
-            except FileExistsError:
-                flash("File with this name already exists.")
-            else:
-                messages = handle_file(filename, model, Wall)
-                for message in messages:
-                    flash(message)
-            next_url = request.args.get("next_url")
-            if next_url is None:
-                next_url = url_for("main.index")
-            return redirect(next_url)
+        if "file[]" not in request.files:
+            flash("No file part.")
+            return redirect(request.url)
+        temp = request.args.get("temp", False)
+        catalog = request.args.get("catalog", "")
+        files = request.files.getlist("file[]")
+        for file in files:
+            if file.filename == "":
+                flash("No selected file.")
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                try:
+                    save_file(file, filename, temp, catalog)
+                except FileExistsError:
+                    flash("File with this name already exists.")
+                else:
+                    messages = handle_file(filename, model, Wall)
+                    for message in messages:
+                        flash(message)
+        next_url = request.args.get("next_url")
+        if next_url is None:
+            next_url = url_for("main.index")
+        return redirect(next_url)
     return render_template("upload_file_form.html")
 
 

@@ -4,8 +4,8 @@
 {% block title_content %}Upload new file{% endblock %}
 {% block app_content %}
 <br>
-<form method=post enctype=multipart/form-data>
-  <input type=file name=file>
-  <input type=submit value=Upload>
+<form method='post' action='' enctype='multipart/form-data'>
+   <input type="file" name="file[]" id="file" multiple>
+   <input type='submit' name='submit' value='Upload'>
 </form>
 {% endblock %}
