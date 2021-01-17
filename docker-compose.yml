@@ -21,7 +21,7 @@ services:
     volumes:
       - .:/econ
     working_dir: /econ
-    command: celery worker -l info -A app.app_tasks.tasks
+    command: celery -A app.app_tasks.tasks.celery worker -l info
 
   postgres:
     hostname: postgres
