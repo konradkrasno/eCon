@@ -7,10 +7,16 @@
   {% if g.current_invest.name %}
       <div class="btn-group mr-2">
         <button type="button" class="btn btn-sm btn-outline-secondary">
-          <a href="{{ url_for('documents.new_folder', folder_path='') }}">Add new folder</a>
+          <a href="{{ url_for('documents.documents', current_path=prev_path) }}">Back</a>
         </button>
         <button type="button" class="btn btn-sm btn-outline-secondary">
-          <a href="{{ url_for('main.upload_files', model='new_file', next_url=url_for('documents.documents')) }}">Add new files</a>
+          <a href="{{ url_for('documents.new_folder', current_path=current_path) }}">Add new folder</a>
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ url_for('documents.upload_files', current_path=current_path) }}">Add new files</a>
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-secondary">
+          <a href="{{ url_for('documents.download_all_files', current_path=current_path) }}">Download all files</a>
         </button>
       </div>
       {% else %}
@@ -35,18 +41,41 @@
           <thead>
             <tr>
               <th class="text-center">Name</th>
+              <th class="text-center">Last modified</th>
+              <th class="text-center">Created</th>
               <th class="text-center"></th>
             </tr>
           </thead>
           <tbody>
-		  {% for path in paths %}
+		  {% for folder in folders %}
 		  <tr>
-		      <td class="text-center">{{ path }}</td>
+		      <td class="text-center"><a href="{{ url_for('documents.documents', current_path=current_path, catalog=folder.name) }}">{{ folder.name }}</a></td>
+              <td class="text-center">{{ folder.last_modified }}</td>
+		      <td class="text-center">{{ folder.created_at }}</td>
 		      <td class="text-center">
                   <div class="btn-toolbar mb-2 mb-md-0">
                       <div class="btn-group mr-1">
                           <button type="button" class="btn btn-sm btn-outline-secondary">
-                            <a href="{{ url_for('documents.delete', path=path) }}">Delete</a>
+                            <a href="{{ url_for('documents.delete', current_path=current_path, filename=folder.name) }}">Delete</a>
+                          </button>
+                      </div>
+                  </div>
+			  </td>
+          </tr>
+		  {% endfor %}
+          		  {% for file in files %}
+		  <tr>
+		      <td class="text-center">{{ file.name }}</td>
+              <td class="text-center">{{ file.last_modified }}</td>
+		      <td class="text-center">{{ file.created_at }}</td>
+		      <td class="text-center">
+                  <div class="btn-toolbar mb-2 mb-md-0">
+                      <div class="btn-group mr-1">
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <a href="{{ url_for('documents.download_file', current_path=current_path) }}">Download</a>
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <a href="{{ url_for('documents.delete', current_path=current_path, filename=file.name) }}">Delete</a>
                           </button>
                       </div>
                   </div>

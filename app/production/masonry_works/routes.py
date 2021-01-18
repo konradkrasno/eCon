@@ -1,3 +1,4 @@
+from werkzeug.utils import secure_filename
 from flask import render_template, flash, redirect, url_for, request, g
 from flask_login import login_required
 from app.production.masonry_works import bp
@@ -9,6 +10,7 @@ from app.production.masonry_works.forms import (
 )
 from app.main.forms import WarrantyForm
 from app.production.masonry_works.data_treatment import TotalAreas, Categories
+from app.handling_files import allowed_file, save_file, handle_csv
 
 
 @bp.route("/walls")
@@ -260,3 +262,40 @@ def delete_processing() -> str:
         title="Delete Processing",
         form=form,
     )
+
+
+@bp.route("/upload_files", methods=["GET", "POST"])
+@login_required
+def upload_files() -> str:
+    if request.method == "POST":
+        if not g.current_invest.id:
+            flash("Choose investment first.")
+            return redirect(url_for("investments.invest_list"))
+        model = request.args.get("model")
+        if not model:
+            return redirect(url_for("masonry_works.wall"))
+        if "file[]" not in request.files:
+            flash("No file part.")
+            return redirect(request.url)
+        files = request.files.getlist("file[]")
+        for file in files:
+            if file.filename == "":
+                flash("No selected file.")
+                return redirect(request.url)
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                try:
+                    save_file(
+                        file=file,
+                        file_dir="",
+                        filename=filename,
+                        temp=True,
+                    )
+                except FileExistsError:
+                    flash("File with this name already exists.")
+                else:
+                    messages = handle_csv(filename, g.current_invest.id, model, Wall)
+                    for message in messages:
+                        flash(message)
+        return redirect(url_for("masonry_works.walls"))
+    return render_template("upload_file_form.html")
