@@ -5,7 +5,6 @@ from flask_migrate import Migrate
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_mail import Mail
-from celery import Celery
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -14,33 +13,6 @@ login.login_view = "auth.login"
 login.login_message = "Please log in to access this page."
 mail = Mail()
 bootstrap = Bootstrap()
-
-CELERY_TASK_LIST = [
-    "app.app_tasks.tasks",
-]
-
-
-def create_celery_app(app=None) -> Celery:
-    """
-    Create a new Celery object and tie together the Celery config to the app's config.
-    Wrap all tasks in the context of the application.
-    """
-    app = app or create_app()
-    celery = Celery(
-        app.import_name, broker=config["broker_url"], include=CELERY_TASK_LIST
-    )
-    celery.conf.update(app.config)
-    TaskBase = celery.Task
-
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
 
 
 def create_app(app_config=config) -> Flask:

@@ -1,5 +1,4 @@
 from typing import *
-from flask import Request
 
 import os
 import glob
@@ -8,7 +7,7 @@ import time
 import pandas as pd
 
 from config import BASE_DIR, config
-from flask import flash, redirect, url_for, g
+from flask import flash, redirect, url_for, g, request
 from flask_login import current_user
 
 
@@ -60,17 +59,6 @@ def handle_csv(filename: str, invest_id: int, model: str, Wall) -> List:
     return messages
 
 
-def validate_path(path: str) -> str:
-    if not g.current_invest.id:
-        flash("Choose investment first.")
-        return redirect(url_for("investments.invest_list"))
-    user_path = get_user_path(user_id=current_user.id, invest_id=g.current_invest.id)
-    path = os.path.abspath(path)
-    if path.startswith(user_path):
-        return path
-    return user_path
-
-
 def create_new_folder(folder_path: str, folder_name: str) -> None:
     path = os.path.abspath(os.path.join(folder_path, folder_name))
     if not os.path.exists(path):
@@ -119,10 +107,18 @@ def get_metadata(paths: List) -> Tuple[List, List]:
     return files, folders
 
 
-def get_current_and_prev_path(
-    request: Request, user_id: int, invest_id: int
-) -> Tuple[str, str]:
-    user_path = get_user_path(user_id, invest_id)
+def validate_path(path: str, user_path: str) -> str:
+    path = os.path.abspath(path)
+    if path.startswith(user_path):
+        return path
+    return user_path
+
+
+def get_current_and_prev_path() -> Tuple[str, str]:
+    if not g.current_invest.id:
+        flash("Choose investment first.")
+        return redirect(url_for("investments.invest_list"))
+    user_path = get_user_path(current_user.id, g.current_invest.id)
     current_path = request.args.get("current_path")
     if not current_path:
         current_path = user_path
@@ -135,6 +131,6 @@ def get_current_and_prev_path(
             prev_path = current_path
         else:
             prev_path = os.path.abspath(os.path.join(current_path, os.pardir))
-    current_path = validate_path(current_path)
-    prev_path = validate_path(prev_path)
+    current_path = validate_path(current_path, user_path)
+    prev_path = validate_path(prev_path, user_path)
     return current_path, prev_path

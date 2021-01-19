@@ -15,9 +15,6 @@
         <button type="button" class="btn btn-sm btn-outline-secondary">
           <a href="{{ url_for('documents.upload_files', current_path=current_path) }}">Add new files</a>
         </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary">
-          <a href="{{ url_for('documents.download_all_files', current_path=current_path) }}">Download all files</a>
-        </button>
       </div>
       {% else %}
         <div class="container">
@@ -56,6 +53,9 @@
                   <div class="btn-toolbar mb-2 mb-md-0">
                       <div class="btn-group mr-1">
                           <button type="button" class="btn btn-sm btn-outline-secondary">
+                            <a href="{{ url_for('documents.make_archive', current_path=current_path, catalog_to_archive=folder.name) }}">Archive</a>
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
                             <a href="{{ url_for('documents.delete', current_path=current_path, filename=folder.name) }}">Delete</a>
                           </button>
                       </div>
@@ -72,7 +72,7 @@
                   <div class="btn-toolbar mb-2 mb-md-0">
                       <div class="btn-group mr-1">
                           <button type="button" class="btn btn-sm btn-outline-secondary">
-                            <a href="{{ url_for('documents.download_file', current_path=current_path) }}">Download</a>
+                            <a href="{{ url_for('documents.download_file', current_path=current_path, filename=file.name) }}">Download</a>
                           </button>
                           <button type="button" class="btn btn-sm btn-outline-secondary">
                             <a href="{{ url_for('documents.delete', current_path=current_path, filename=file.name) }}">Delete</a>
