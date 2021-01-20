@@ -19,7 +19,7 @@ def allowed_file(filename: str) -> bool:
 
 
 def get_temp_path() -> str:
-    return os.path.abspath(os.path.join(BASE_DIR, config["UPLOAD_FOLDER"], "/temp"))
+    return os.path.abspath(os.path.join(BASE_DIR, config["UPLOAD_FOLDER"], "temp"))
 
 
 def get_user_path(user_id: int, invest_id: int, path: str = "") -> str:

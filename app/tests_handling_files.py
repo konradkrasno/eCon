@@ -18,5 +18,5 @@ def test_read_files():
 
 def test_get_current_and_prev_path(app_and_db):
     assert (
-        get_current_and_prev_path(request, 1, 1) == "econ/app/static/files/1/1"
+        get_current_and_prev_path() == "econ/app/static/files/1/1"
     ), "econ/app/static/files/1/1"

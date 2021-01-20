@@ -8,9 +8,19 @@ def populate_db() -> None:
     guest = User(username="Guest", email="guest@example.com", password="guest")
     guest.is_active = True
     db.session.add(guest)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+
     konrad = User(username="konrad", email="konrad@example.com", password="123")
     konrad.is_active = True
     db.session.add(konrad)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+
     ola = User(username="ola", email="ola@example.com", password="123")
     ola.is_active = True
     db.session.add(ola)

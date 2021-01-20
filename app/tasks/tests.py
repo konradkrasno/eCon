@@ -88,7 +88,7 @@ class TestAddTask:
         current_user.current_invest_id = investment.id
         form = TaskForm(
             description="test task",
-            deadline=date(year=2021, month=1, day=12),
+            deadline=date(year=3021, month=1, day=20),
             priority=5,
             executor_name="unlogged_user",
         )
@@ -105,7 +105,7 @@ class TestAddTask:
     ):
         form = TaskForm(
             description="test task",
-            deadline=date(year=2021, month=1, day=12),
+            deadline=date(year=3021, month=1, day=12),
             executor_name="unlogged_user",
         )
         response = client.post(
@@ -123,7 +123,7 @@ class TestAddTask:
         current_user.current_invest_id = investment.id
         form = TaskForm(
             description="test task",
-            deadline=date(year=2021, month=1, day=12),
+            deadline=date(year=3021, month=1, day=12),
             executor_name="wrong_username",
         )
         response = client.post(
@@ -164,7 +164,7 @@ class TestEditTask:
         task = Task.query.filter_by(description="test task 1").first()
         form = TaskForm(
             description="new task name",
-            deadline=date(year=2021, month=1, day=15),
+            deadline=date(year=3021, month=1, day=15),
             priority=3,
             executor_name="active_user",
         )
@@ -176,7 +176,7 @@ class TestEditTask:
         assert response.status_code == 200
         assert b"You have edited the task successfully." in response.data
         assert task.description == "new task name"
-        assert task.deadline == date(year=2021, month=1, day=15)
+        assert task.deadline == date(year=3021, month=1, day=15)
         assert task.priority == 3
         assert task.executor.users.username == "active_user"
 

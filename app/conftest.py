@@ -12,7 +12,7 @@ from app.models import Wall, User, Investment, Worker, Task
 
 
 contexts_required = pytest.mark.skipif(
-    not os.path.exists(os.path.join(BASE_DIR, config["UPLOAD_FOLDER"], "test")),
+    not os.path.exists(os.path.join(BASE_DIR, config["UPLOAD_FOLDER"], "temp/test")),
     reason="contexts csv does not exist",
 )
 
