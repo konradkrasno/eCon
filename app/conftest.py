@@ -117,7 +117,7 @@ def add_tasks(app_and_db, add_investment):
     task1 = Task(
         description="test task 1",
         created_at=datetime.datetime.utcnow(),
-        deadline=datetime.date(2021, 1, 12),
+        deadline=datetime.date.today() + datetime.timedelta(days=2),
         orderer=worker1,
         executor=worker2,
         progress=0,
@@ -126,7 +126,7 @@ def add_tasks(app_and_db, add_investment):
     task2 = Task(
         description="test task 2",
         created_at=datetime.datetime.utcnow(),
-        deadline=datetime.date(2021, 1, 12),
+        deadline=datetime.date.today() + datetime.timedelta(days=2),
         orderer=worker1,
         executor=worker1,
         progress=0,
@@ -135,7 +135,7 @@ def add_tasks(app_and_db, add_investment):
     task3 = Task(
         description="test task 3",
         created_at=datetime.datetime.utcnow(),
-        deadline=datetime.date(2021, 1, 12),
+        deadline=datetime.date.today() + datetime.timedelta(days=2),
         orderer=worker1,
         executor=worker1,
         progress=100,

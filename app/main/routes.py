@@ -2,17 +2,38 @@ from flask import (
     render_template,
     redirect,
     url_for,
+    g,
+    jsonify,
+    request
 )
 from flask_login import login_required, login_user
 from app.main import bp
 from app.models import User
 from app.main.populate_db import populate_db
+from app import r
+from app.redis_client import get_notification
 
 
 @bp.before_app_first_request
 def before_first_request():
     if not User.query.filter_by(username="Guest").first():
         populate_db()
+
+
+@bp.route("/count_notifications")
+@login_required
+def count_notifications() -> str:
+    n_type = request.args.get("n_type")
+    return jsonify(g.current_worker.count_unseen_notifications(n_type=n_type))
+
+
+@bp.route("/notifications")
+@login_required
+def notifications() -> str:
+    worker_id = request.args.get("worker_id")
+    notification = get_notification(r, worker_id)
+    # notification = {"description": f"test notification, current_worker.id {worker_id}"}
+    return jsonify([notification])
 
 
 @bp.route("/")

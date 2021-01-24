@@ -32,6 +32,7 @@
     </style>
     <!-- Custom styles for this template -->
     <link href="../static/css/dashboard.css" rel="stylesheet">
+    <link href="../static/css/notifications.css" rel="stylesheet"/>
 </head>
 <body>
     <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
@@ -97,6 +98,14 @@
             <a class="nav-link" href="{{ url_for('tasks.tasks') }}">
               <span data-feather="file-text"></span>
               Tasks
+              {% if current_user.is_authenticated %}
+                {% set new_tasks_number = g.current_worker.count_unseen_notifications('tasks') %}
+                <span id="tasks_count" class="badge"
+                      style="visibility: {% if new_tasks_number %}visible
+                                         {% else %}hidden {% endif %};">
+                    {{ new_tasks_number }}
+                </span>
+              {% endif %}
             </a>
           </li>
           <li class="nav-item">
@@ -152,10 +161,41 @@
         {% block app_content %}{% endblock %}
     </main>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
 <script src="../static/js/dashboard.js"></script>
-
+<script src="../static/js/notifications.js"></script>
+<script>
+    function set_tasks_count(n) {
+        $('#tasks_count').text(n);
+        $('#tasks_count').css('visibility', n ? 'visible' : 'hidden');
+    }
+</script>
+<script>
+    {% if current_user.is_authenticated %}
+    $(function() {
+        setInterval(function() {
+            $.ajax('{{ url_for('main.count_notifications', n_type='tasks') }}').done(
+                function(n) {
+                  set_tasks_count(n);
+                }
+            );
+            $.ajax('{{ url_for('main.notifications', worker_id=g.current_worker.id) }}').done(
+                function(notifications) {
+                  for (var i = 0; i < notifications.length; i++) {
+                    window.createNotification({
+                      theme: 'success',
+                      showDuration: 5000
+                      })({
+                          message: notifications[i].description
+                      });
+                  }
+                }
+            );
+        }, 10000);
+    });
+    {% endif %}
+</script>
 </body>
 </html>

@@ -115,9 +115,6 @@ def validate_path(path: str, user_path: str) -> str:
 
 
 def get_current_and_prev_path() -> Tuple[str, str]:
-    if not g.current_invest.id:
-        flash("Choose investment first.")
-        return redirect(url_for("investments.invest_list"))
     user_path = get_user_path(current_user.id, g.current_invest.id)
     current_path = request.args.get("current_path")
     if not current_path:

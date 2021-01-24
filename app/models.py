@@ -127,15 +127,21 @@ class Worker(db.Model):
         cascade="all, delete",
         passive_deletes=True,
     )
+    last_time_tasks_displayed = db.Column(db.DateTime, default=datetime.utcnow)
+    last_time_messages_displayed = db.Column(db.DateTime, default=datetime.utcnow)
 
     @classmethod
     def get_by_username(cls, invest_id: int, username: str) -> db.Model:
-        return (
+        worker = (
             cls.query.filter_by(investment_id=invest_id)
             .join(User, User.id == cls.user_id)
             .filter_by(username=username)
             .first()
         )
+        if worker:
+            return worker
+        return Worker()
+
 
     @classmethod
     def belongs_to_investment(cls, email: str, investment_id: int) -> bool:
@@ -159,6 +165,30 @@ class Worker(db.Model):
     @classmethod
     def get_team(cls, investment_id: int) -> List:
         return cls.query.filter_by(investment_id=investment_id).order_by("id").all()
+
+    def update_attr(self, attr: str) -> None:
+        setattr(self, attr, datetime.utcnow())
+        db.session.commit()
+
+    def get_new_tasks(self) -> List:
+        if self.last_time_tasks_displayed:
+            return (
+                self.tasks_to_execution
+                .filter(Task.created_at > self.last_time_tasks_displayed)
+                .order_by(Task.created_at)
+                .all()
+            )
+        return []
+
+    def get_new_messages(self) -> List:
+        pass
+
+    def count_unseen_notifications(self, n_type: str) -> int:
+        if n_type == "tasks":
+            return len(self.get_new_tasks())
+        elif n_type == "messages":
+            return len(self.get_new_messages())
+        return 0
 
 
 class Investment(db.Model):
@@ -248,6 +278,19 @@ class Task(db.Model):
 
     def __repr__(self) -> str:
         return "<Task(description=%s)>" % (self.description,)
+
+
+# class Notification(db.Model):
+#     __tablename__ = "notifications"
+#
+#     id = db.Column(db.Integer, primary_key=True)
+#     # name = db.Column(db.String(32), index=True)
+#     type = db.Column(db.String(32))
+#     description = db.Column(db.String(128))
+#     # created_at = db.Column(db.DateTime, defaul=datetime.utcnow)
+#
+#     def get_unseen_notifications(self, type: db.Model) -> List:
+#         pass
 
 
 class Hole(db.Model):

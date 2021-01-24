@@ -1,3 +1,5 @@
+import redis
+
 from flask import Flask
 from config import config
 from flask_sqlalchemy import SQLAlchemy
@@ -13,6 +15,8 @@ login.login_view = "auth.login"
 login.login_message = "Please log in to access this page."
 mail = Mail()
 bootstrap = Bootstrap()
+
+r = redis.Redis(host="redis", db=1)
 
 
 def create_app(app_config=config) -> Flask:

@@ -1,13 +1,12 @@
 version: "3.7"
 
 services:
-  rabbit:
-    hostname: rabbit
-    image: rabbitmq:3-management-alpine
-    container_name: rabbit
+  redis:
+    hostname: redis
+    image: redis
+    container_name: redis
     ports:
-      - 5672:5672
-      - 15672:15672
+      - "6379:6379"
 
   worker:
     build:
@@ -15,9 +14,9 @@ services:
       dockerfile: Dockerfile
     container_name: worker
     links:
-      - rabbit
+      - redis
     depends_on:
-      - rabbit
+      - redis
     volumes:
       - .:/econ
     working_dir: /econ
@@ -40,7 +39,7 @@ services:
     container_name: web
     depends_on:
       - postgres
-      - rabbit
+      - redis
     env_file:
       - ".env"
     ports:

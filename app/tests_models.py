@@ -1,4 +1,5 @@
 import pytest
+import datetime
 
 from app.models import Hole, Processing, Wall, User, Investment, Worker, Task
 from app.conftest import contexts_required
@@ -347,6 +348,17 @@ class TestWorker:
         worker3 = Worker.query.get(3)
 
         assert Worker.get_team(investment_id=1) == [worker1, worker2, worker3]
+
+    @staticmethod
+    def test_get_new_tasks(app_and_db, add_tasks):
+        db = app_and_db[1]
+        user = User.query.filter_by(username="active_user").first()
+        investment = Investment.query.filter_by(name="Test Invest").first()
+        user.current_invest_id = investment.id
+        db.session.commit()
+        worker = Worker.get_by_username(investment.id, user.username)
+        assert worker.last_time_tasks_displayed
+        assert worker.get_new_tasks()
 
 
 class TestInvestment:

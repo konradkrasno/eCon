@@ -22,6 +22,6 @@ config = {
     "UPLOAD_FOLDER": "app/static/files",
     "ALLOWED_EXTENSIONS": {"csv", "pdf"},
     # Celery settings
-    "broker_url": "amqp://guest@rabbit//",
-    "result_backend": "amqp://guest@rabbit//",
+    "broker_url": "redis://redis:6379/0",
+    "result_backend": "redis://redis:6379/0",
 }
