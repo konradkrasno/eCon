@@ -18,7 +18,8 @@ def add_notification(r: redis.Redis, notification: Dict) -> None:
 
 
 def get_notification(r: redis.Redis, worker_id: int) -> Dict:
-    _, notification = r.blpop(f"notifications:{worker_id}")
-    if notification:
-        return json.loads(notification)
-    return {}
+    try:
+        _, notification = r.blpop(f"notifications:{worker_id}", timeout=1)
+    except TypeError:
+        notification = b"{}"
+    return json.loads(notification)

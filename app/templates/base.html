@@ -184,12 +184,14 @@
             $.ajax('{{ url_for('main.notifications', worker_id=g.current_worker.id) }}').done(
                 function(notifications) {
                   for (var i = 0; i < notifications.length; i++) {
-                    window.createNotification({
-                      theme: 'success',
-                      showDuration: 5000
-                      })({
-                          message: notifications[i].description
-                      });
+                    if (notifications[i]) {
+                      window.createNotification({
+                        theme: 'success',
+                        showDuration: 5000
+                        })({
+                            message: notifications[i].description
+                        });
+                    }
                   }
                 }
             );

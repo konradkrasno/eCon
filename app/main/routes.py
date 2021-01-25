@@ -32,7 +32,6 @@ def count_notifications() -> str:
 def notifications() -> str:
     worker_id = request.args.get("worker_id")
     notification = get_notification(r, worker_id)
-    # notification = {"description": f"test notification, current_worker.id {worker_id}"}
     return jsonify([notification])
 
 

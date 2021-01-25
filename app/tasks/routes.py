@@ -131,7 +131,7 @@ def add_task():
         notification = create_notification(
             worker_id=executor.id,
             n_type="task",
-            description=f"You have a new task: {form.description.data} from {orderer.users.username}",
+            description=f"You have a new task: '{form.description.data}' from {orderer.users.username}",
         )
         add_notification(r, notification)
         return redirect(url_for("tasks.tasks"))
