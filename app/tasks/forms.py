@@ -19,7 +19,7 @@ class TaskForm(FlaskForm):
                 raise ValidationError("Deadline must be tomorrow at the earliest.")
 
     def validate_executor_name(self, executor_name):
-        if not Worker.get_by_username(g.current_invest.id, executor_name.data):
+        if not Worker.get_by_username(g.current_invest.id, executor_name.data).id:
             raise ValidationError(
                 "We can not find worker with this name. Check typing and try again."
             )

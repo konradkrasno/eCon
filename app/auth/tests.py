@@ -246,7 +246,7 @@ class TestChangePassword:
 
 class TestResetPasswordRequest:
     @staticmethod
-    def test_get(client, captured_templates):
+    def test_get(client, captured_templates, test_with_anonymous_user):
         response = client.get(url_for("auth.reset_password_request"))
         assert response.status_code == 200
         assert len(captured_templates) == 1
@@ -256,7 +256,7 @@ class TestResetPasswordRequest:
         assert isinstance(context["form"], ResetPasswordForm)
 
     @staticmethod
-    def test_post_with_right_email(client, mocker, unlogged_user):
+    def test_post_with_right_email(client, mocker, unlogged_user, test_with_anonymous_user):
         mocker.patch("app.auth.email.send_password_reset_confirmation")
         form = ResetPasswordForm(email="unlogged_user@email.com")
         response = client.post(
@@ -270,7 +270,7 @@ class TestResetPasswordRequest:
         assert b"Check your email to reset your password." in response.data
 
     @staticmethod
-    def test_post_with_wrong_email(client, mocker, unlogged_user):
+    def test_post_with_wrong_email(client, mocker, unlogged_user, test_with_anonymous_user):
         mocker.patch("app.auth.email.send_password_reset_confirmation")
         form = ResetPasswordForm(email="wrong@email.com")
         response = client.post(
@@ -285,7 +285,7 @@ class TestResetPasswordRequest:
 
 class TestResetPassword:
     @staticmethod
-    def test_get(client, captured_templates, unlogged_user):
+    def test_get(client, captured_templates, unlogged_user, test_with_anonymous_user):
         user = User.query.filter_by(username="unlogged_user").first()
         token = get_confirmation_token(id=user.id)
         response = client.get(url_for("auth.reset_password", token=token))
@@ -297,7 +297,7 @@ class TestResetPassword:
         assert isinstance(context["form"], ChangePasswordForm)
 
     @staticmethod
-    def test_post_with_valid_token(client, unlogged_user):
+    def test_post_with_valid_token(client, unlogged_user, test_with_anonymous_user):
         user = User.query.filter_by(username="unlogged_user").first()
         token = get_confirmation_token(id=user.id)
         form = ChangePasswordForm(password="new_password", password2="new_password")
@@ -311,7 +311,7 @@ class TestResetPassword:
         assert user.validate_password("new_password")
 
     @staticmethod
-    def test_post_with_invalid_token(client, unlogged_user):
+    def test_post_with_invalid_token(client, unlogged_user, test_with_anonymous_user):
         user = User.query.filter_by(username="unlogged_user").first()
         form = ChangePasswordForm(password="new_password", password2="new_password")
         response = client.post(
@@ -415,7 +415,8 @@ class TestDeleteAccount:
         )
         assert response.status_code == 200
         assert User.query.filter_by(username="active_user").first()
-        assert len(Worker.query.all()) == 2
+        assert Worker.query.filter_by(user_id=user1.id).first()
+        assert Worker.query.filter_by(user_id=user2.id).first()
         assert (
             b"This accounts is only admin in projects: [&#39;Test Invest&#39;]."
             b" Give root permission to other user and try again" in response.data
@@ -450,9 +451,8 @@ class TestDeleteAccount:
         )
         assert response.status_code == 200
         assert not User.query.filter_by(username="active_user").first()
-        assert Worker.query.all() == Worker.query.filter_by(user_id=user2.id).all()
-        assert (
-            Investment.query.all()
-            == Investment.query.filter_by(name="Test Invest 1").all()
-        )
+        assert not Worker.query.filter_by(user_id=user1.id).first()
+        assert Worker.query.filter_by(user_id=user2.id).first()
+        assert Investment.query.filter_by(name="Test Invest 1").first()
+        assert not Investment.query.filter_by(name="Test Invest 2").first()
         assert b"The account has been deleted." in response.data

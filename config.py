@@ -9,7 +9,7 @@ config = {
     "SECRET_KEY": os.environ.get("SECRET_KEY"),
     # Database settings
     "SQLALCHEMY_DATABASE_URI": os.environ.get("DATABASE_URL")
-    or "sqlite:///{}".format(os.path.join(BASE_DIR, "app_and_db.db")),
+    or "sqlite:///{}".format(os.path.join(BASE_DIR, "app.db")),
     "SQLALCHEMY_TRACK_MODIFICATIONS": False,
     # Mail settings
     "MAIL_DEFAULT_SENDER": os.environ.get("MAIL_DEFAULT_SENDER"),

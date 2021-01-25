@@ -111,7 +111,7 @@ def deputed_tasks():
 @login_required
 def add_task():
     orderer = Worker.get_by_username(g.current_invest.id, current_user.username)
-    if not orderer:
+    if not orderer.id:
         flash("Choose investment first.")
         return redirect(url_for("tasks.tasks"))
     form = TaskForm()

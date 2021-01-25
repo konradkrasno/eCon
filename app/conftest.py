@@ -6,10 +6,10 @@ import datetime
 
 from contextlib import contextmanager
 from flask import template_rendered
-from app import create_app, db, login
+from flask_login import AnonymousUserMixin
+from app import create_app, db, login, r
 from config import config, BASE_DIR
 from app.models import Wall, User, Investment, Worker, Task
-from app import r
 
 
 contexts_required = pytest.mark.skipif(
@@ -191,3 +191,10 @@ def test_with_authenticated_user(active_user):
         return User.query.filter(
             User.username.notin_(["unlogged_user", "inactive_user"])
         ).first()
+
+
+@pytest.fixture
+def test_with_anonymous_user():
+    @login.request_loader
+    def load_user_from_request(request):
+        return AnonymousUserMixin()
