@@ -1,33 +1,13 @@
-from typing import *
-
-from threading import Thread
-from flask import current_app, render_template
-from flask_mail import Message
-from app import mail
+from flask import render_template
 from app.models import User
 from app.auth.token import get_confirmation_token
 from config import config
-
-
-def send_async_email(app, msg):
-    with app.app_context():
-        mail.send(msg)
-
-
-def send_email(
-    subject: str, sender: str, recipients: List, text_body: str, html_body: str
-) -> None:
-    msg = Message(subject=subject, sender=sender, recipients=recipients)
-    msg.body = text_body
-    msg.html = html_body
-    Thread(
-        target=send_async_email, args=(current_app._get_current_object(), msg)
-    ).start()
+from app.app_tasks import tasks
 
 
 def send_password_reset_confirmation(user: User) -> None:
     token = get_confirmation_token(id=user.id)
-    send_email(
+    tasks.send_email.delay(
         "eCon - Reset Your Password",
         sender=config["MAIL_DEFAULT_SENDER"],
         recipients=[user.email],
@@ -38,7 +18,7 @@ def send_password_reset_confirmation(user: User) -> None:
 
 def send_register_confirmation(user: User) -> None:
     token = get_confirmation_token(id=user.id)
-    send_email(
+    tasks.send_email.delay(
         "eCon - Activate Your Account",
         sender=config["MAIL_DEFAULT_SENDER"],
         recipients=[user.email],
@@ -51,7 +31,7 @@ def send_register_confirmation(user: User) -> None:
 
 def send_change_email_confirmation(email: str, user: User) -> None:
     token = get_confirmation_token(id=user.id, email=email)
-    send_email(
+    tasks.send_email.delay(
         "eCon - Change Your Email Address",
         sender=config["MAIL_DEFAULT_SENDER"],
         recipients=[email],
@@ -62,7 +42,7 @@ def send_change_email_confirmation(email: str, user: User) -> None:
 
 def send_complete_registration_mail(user: User) -> None:
     token = get_confirmation_token(id=user.id)
-    send_email(
+    tasks.send_email.delay(
         "eCon - Complete Registration",
         sender=config["MAIL_DEFAULT_SENDER"],
         recipients=[user.email],

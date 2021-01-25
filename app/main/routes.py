@@ -1,11 +1,4 @@
-from flask import (
-    render_template,
-    redirect,
-    url_for,
-    g,
-    jsonify,
-    request
-)
+from flask import render_template, redirect, url_for, g, jsonify, request
 from flask_login import login_required, login_user
 from app.main import bp
 from app.models import User

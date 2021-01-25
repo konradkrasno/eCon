@@ -5,11 +5,7 @@ import json
 
 
 def create_notification(worker_id: int, n_type: str, description: str) -> Dict:
-    return {
-        "worker_id": worker_id,
-        "n_type": n_type,
-        "description": description
-    }
+    return {"worker_id": worker_id, "n_type": n_type, "description": description}
 
 
 def add_notification(r: redis.Redis, notification: Dict) -> None:

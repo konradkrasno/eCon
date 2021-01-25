@@ -142,7 +142,6 @@ class Worker(db.Model):
             return worker
         return Worker()
 
-
     @classmethod
     def belongs_to_investment(cls, email: str, investment_id: int) -> bool:
         return (
@@ -173,8 +172,9 @@ class Worker(db.Model):
     def get_new_tasks(self) -> List:
         if self.last_time_tasks_displayed:
             return (
-                self.tasks_to_execution
-                .filter(Task.created_at > self.last_time_tasks_displayed)
+                self.tasks_to_execution.filter(
+                    Task.created_at > self.last_time_tasks_displayed
+                )
                 .order_by(Task.created_at)
                 .all()
             )

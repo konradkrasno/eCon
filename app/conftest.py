@@ -9,6 +9,7 @@ from flask import template_rendered
 from app import create_app, db, login
 from config import config, BASE_DIR
 from app.models import Wall, User, Investment, Worker, Task
+from app import r
 
 
 contexts_required = pytest.mark.skipif(
@@ -25,6 +26,7 @@ def temp_db():
     finally:
         db.session.remove()
         db.drop_all()
+        r.flushdb()
 
 
 @pytest.fixture

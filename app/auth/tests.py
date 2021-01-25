@@ -1,4 +1,4 @@
-from flask import url_for
+from flask import url_for, session
 from flask_login import current_user
 from app.auth.forms import (
     LoginForm,
@@ -129,9 +129,8 @@ class TestActivateAccount:
 
     @staticmethod
     def test_post_with_invalid_token(client, inactive_user):
-        token = get_confirmation_token(id=2)
         response = client.post(
-            url_for("auth.activate_account", token=token), follow_redirects=True
+            url_for("auth.activate_account", token="token"), follow_redirects=True
         )
         assert response.status_code == 200
         user = User.query.get(1)

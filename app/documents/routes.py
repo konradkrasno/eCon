@@ -9,7 +9,7 @@ from flask import (
     request,
     flash,
     send_from_directory,
-    g
+    g,
 )
 from flask_login import login_required
 from app.documents import bp
@@ -28,7 +28,6 @@ from app.app_tasks import tasks
 @bp.route("/")
 @login_required
 def documents() -> str:
-    # TODO add current_invest_required decorator
     if not g.current_invest.id:
         flash("Choose investment first.")
         return redirect(url_for("investments.invest_list"))
@@ -48,7 +47,6 @@ def documents() -> str:
 @bp.route("/new_folder", methods=["GET", "POST"])
 @login_required
 def new_folder() -> str:
-    # TODO add current_invest_required decorator
     current_path, prev_path = get_current_and_prev_path()
     form = NewFolderForm(current_path)
     if form.validate_on_submit():
@@ -70,7 +68,6 @@ def new_folder() -> str:
 @bp.route("/upload_files", methods=["GET", "POST"])
 @login_required
 def upload_files():
-    # TODO add current_invest_required decorator
     if request.method == "POST":
         current_path, prev_path = get_current_and_prev_path()
         if "file[]" not in request.files:
@@ -104,7 +101,6 @@ def upload_files():
 @bp.route("/delete", methods=["GET", "POST"])
 @login_required
 def delete() -> str:
-    # TODO add current_invest_required decorator
     form = WarrantyForm()
     if form.validate_on_submit():
         current_path, prev_path = get_current_and_prev_path()
@@ -123,7 +119,6 @@ def delete() -> str:
 @bp.route("/download_file", methods=["GET", "POST"])
 @login_required
 def download_file():
-    # TODO add current_invest_required decorator
     current_path, prev_path = get_current_and_prev_path()
     filename = request.args.get("filename")
     if filename:
@@ -133,12 +128,15 @@ def download_file():
 @bp.route("/make_archive", methods=["GET", "POST"])
 @login_required
 def make_archive():
-    # TODO add current_invest_required decorator
     current_path, prev_path = get_current_and_prev_path()
     catalog_to_archive = request.args.get("catalog_to_archive")
     if catalog_to_archive:
-        tasks.archive_and_save.delay(current_path, catalog_to_archive)
-        flash("The archiving is started.")
+        tasks.archive_and_save.delay(
+            current_path, catalog_to_archive, g.current_worker.id
+        )
+        flash(
+            "The archiving is started. Wait for notification that you can download the file."
+        )
     return redirect(
         url_for("documents.documents", current_path=current_path, prev_path=prev_path)
     )

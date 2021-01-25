@@ -33,7 +33,11 @@ def populate_db() -> None:
     konrad = User.query.filter_by(username="konrad").first()
     ola = User.query.filter_by(username="ola").first()
 
-    worker1 = Worker(position="Advisor", admin=True, user_id=guest.id, )
+    worker1 = Worker(
+        position="Advisor",
+        admin=True,
+        user_id=guest.id,
+    )
     worker2 = Worker(position="Site Manager", admin=True, user_id=konrad.id)
     worker3 = Worker(position="Project Manager", admin=False, user_id=ola.id)
 
