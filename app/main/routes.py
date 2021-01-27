@@ -37,7 +37,7 @@ def index() -> str:
 
 @bp.route("/schedule")
 @login_required
-def schedule() -> str:
+def in_preparation() -> str:
     return render_template("in_preparation.html", title="Schedule")
 
 
