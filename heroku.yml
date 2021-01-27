@@ -1,0 +1,11 @@
+setup:
+  addons:
+    - plan: heroku-postgresql
+      as: DATABASE
+build:
+  docker:
+    web: Dockerfile
+    worker: Dockerfile
+run:
+  web: flask db init; flask db migrate; flask db upgrade; gunicorn econ:app
+  worker: celery -A app.app_tasks.tasks.celery worker -l info
