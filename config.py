@@ -22,6 +22,6 @@ config = {
     "UPLOAD_FOLDER": "app/static/files",
     "ALLOWED_EXTENSIONS": {"csv", "pdf"},
     # Celery settings
-    "broker_url": "redis://redis:6379/0",
-    "result_backend": "redis://redis:6379/0",
+    "broker_url": os.environ.get("BROKER_URL"),
+    "result_backend": os.environ.get("RESULT_BACKEND"),
 }
