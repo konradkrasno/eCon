@@ -16,7 +16,7 @@ login.login_message = "Please log in to access this page."
 mail = Mail()
 bootstrap = Bootstrap()
 
-r = redis.Redis(host="redis", db=1)
+r = redis.Redis(host=config["REDIS_URL"], db=1)
 
 
 def create_app(app_config=config) -> Flask:
