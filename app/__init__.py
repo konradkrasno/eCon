@@ -59,6 +59,10 @@ def create_app(app_config=config) -> Flask:
 
     app.register_blueprint(masonry_works_bp, url_prefix="/masonry_works")
 
+    from app.production.custom_registry import bp as custom_registry_bp
+
+    app.register_blueprint(custom_registry_bp, url_prefix="/custom_registry")
+
     return app
 
 

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title_content %}{{ title }}{% endblock %}
+{% block app_content %}
+
+<a href="{{ url_for('custom_registry.new_table') }}">Create new table</a><br>
+<a href="{{ url_for('custom_registry.new_column') }}">Create new column</a>
+
+{% endblock %}

@@ -280,19 +280,6 @@ class Task(db.Model):
         return "<Task(description=%s)>" % (self.description,)
 
 
-# class Notification(db.Model):
-#     __tablename__ = "notifications"
-#
-#     id = db.Column(db.Integer, primary_key=True)
-#     # name = db.Column(db.String(32), index=True)
-#     type = db.Column(db.String(32))
-#     description = db.Column(db.String(128))
-#     # created_at = db.Column(db.DateTime, defaul=datetime.utcnow)
-#
-#     def get_unseen_notifications(self, type: db.Model) -> List:
-#         pass
-
-
 class Hole(db.Model):
     __tablename__ = "holes"
 
