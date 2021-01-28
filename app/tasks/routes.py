@@ -8,14 +8,6 @@ from app.main.forms import WarrantyForm
 from app.redis_client import create_notification, add_notification
 
 
-@bp.before_app_request
-def before_request():
-    if current_user.is_authenticated:
-        g.current_worker = Worker.get_by_username(
-            g.current_invest.id, current_user.username
-        )
-
-
 @bp.route("/")
 @login_required
 def tasks():

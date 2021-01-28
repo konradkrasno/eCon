@@ -256,7 +256,9 @@ class TestResetPasswordRequest:
         assert isinstance(context["form"], ResetPasswordForm)
 
     @staticmethod
-    def test_post_with_right_email(client, mocker, unlogged_user, test_with_anonymous_user):
+    def test_post_with_right_email(
+        client, mocker, unlogged_user, test_with_anonymous_user
+    ):
         mocker.patch("app.auth.email.send_password_reset_confirmation")
         form = ResetPasswordForm(email="unlogged_user@email.com")
         response = client.post(
@@ -270,7 +272,9 @@ class TestResetPasswordRequest:
         assert b"Check your email to reset your password." in response.data
 
     @staticmethod
-    def test_post_with_wrong_email(client, mocker, unlogged_user, test_with_anonymous_user):
+    def test_post_with_wrong_email(
+        client, mocker, unlogged_user, test_with_anonymous_user
+    ):
         mocker.patch("app.auth.email.send_password_reset_confirmation")
         form = ResetPasswordForm(email="wrong@email.com")
         response = client.post(

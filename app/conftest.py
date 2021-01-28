@@ -110,6 +110,11 @@ def add_investment(app_and_db, active_user, unlogged_user):
     db.session.add(investment)
     db.session.commit()
 
+    # setting current_invest
+    investment = Investment.query.filter_by(name="Test Invest").first()
+    user1.current_invest_id = investment.id
+    db.session.commit()
+
 
 @pytest.fixture
 def add_tasks(app_and_db, add_investment):

@@ -9,8 +9,6 @@ from app.main.forms import WarrantyForm
 class TestTasks:
     @staticmethod
     def test_get(client, captured_templates, test_with_authenticated_user, add_tasks):
-        investment = Investment.query.filter_by(name="Test Invest").first()
-        current_user.current_invest_id = investment.id
         task1 = Task.query.filter_by(description="test task 1").first()
         task2 = Task.query.filter_by(description="test task 2").first()
         task3 = Task.query.filter_by(description="test task 3").first()
@@ -29,8 +27,6 @@ class TestTasks:
 class MyTasks:
     @staticmethod
     def test_get(client, captured_templates, test_with_authenticated_user, add_tasks):
-        investment = Investment.query.filter_by(name="Test Invest").first()
-        current_user.current_invest_id = investment.id
         task2 = Task.query.filter_by(description="test task 2").first()
         task3 = Task.query.filter_by(description="test task 3").first()
         response = client.get(url_for("tasks.my_tasks"))
@@ -48,8 +44,6 @@ class MyTasks:
 class DeputedTasks:
     @staticmethod
     def test_get(client, captured_templates, test_with_authenticated_user, add_tasks):
-        investment = Investment.query.filter_by(name="Test Invest").first()
-        current_user.current_invest_id = investment.id
         task1 = Task.query.filter_by(description="test task 1").first()
         task2 = Task.query.filter_by(description="test task 2").first()
         task3 = Task.query.filter_by(description="test task 3").first()
@@ -70,8 +64,6 @@ class TestAddTask:
     def test_get(
         client, captured_templates, test_with_authenticated_user, add_investment
     ):
-        investment = Investment.query.filter_by(name="Test Invest").first()
-        current_user.current_invest_id = investment.id
         response = client.get(url_for("tasks.add_task"))
         assert response.status_code == 200
         assert len(captured_templates) == 1
@@ -84,8 +76,6 @@ class TestAddTask:
     def test_post_when_ok(
         client, captured_templates, test_with_authenticated_user, add_investment
     ):
-        investment = Investment.query.filter_by(name="Test Invest").first()
-        current_user.current_invest_id = investment.id
         form = TaskForm(
             description="test task",
             deadline=date.today() + timedelta(days=2),
@@ -103,6 +93,7 @@ class TestAddTask:
     def test_post_when_no_orderer(
         client, captured_templates, test_with_authenticated_user, add_investment
     ):
+        current_user.current_invest_id = None
         form = TaskForm(
             description="test task",
             deadline=date.today() + timedelta(days=2),
@@ -119,8 +110,6 @@ class TestAddTask:
     def test_post_when_no_executor(
         client, captured_templates, test_with_authenticated_user, add_investment
     ):
-        investment = Investment.query.filter_by(name="Test Invest").first()
-        current_user.current_invest_id = investment.id
         form = TaskForm(
             description="test task",
             deadline=date.today() + timedelta(days=2),
@@ -140,8 +129,6 @@ class TestAddTask:
 class TestEditTask:
     @staticmethod
     def test_get(client, captured_templates, test_with_authenticated_user, add_tasks):
-        investment = Investment.query.filter_by(name="Test Invest").first()
-        current_user.current_invest_id = investment.id
         task = Task.query.filter_by(description="test task 1").first()
         response = client.get(url_for("tasks.edit_task", _id=task.id))
         assert response.status_code == 200
@@ -159,8 +146,6 @@ class TestEditTask:
     def test_post_when_ok(
         client, captured_templates, test_with_authenticated_user, add_tasks
     ):
-        investment = Investment.query.filter_by(name="Test Invest").first()
-        current_user.current_invest_id = investment.id
         task = Task.query.filter_by(description="test task 1").first()
         form = TaskForm(
             description="new task name",

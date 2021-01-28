@@ -8,12 +8,6 @@ from app.main.forms import WarrantyForm
 from app.models import Investment, Worker
 
 
-@bp.before_app_request
-def before_request():
-    if current_user.is_authenticated:
-        g.current_invest = current_user.get_current_invest()
-
-
 @bp.route("/")
 @login_required
 def invest_list() -> str:
@@ -65,7 +59,7 @@ def info(_id: int) -> str:
 def choose(_id: int) -> str:
     current_user.current_invest_id = _id
     db.session.commit()
-    return redirect(url_for("investments.invest_list"))
+    return redirect(url_for("main.index"))
 
 
 @bp.route("/edit", methods=["GET", "POST"])

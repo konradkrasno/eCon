@@ -5,7 +5,9 @@ from sqlalchemy.exc import IntegrityError
 
 
 def populate_db() -> None:
-    guest = User(username="Guest", email="guest@example.com", password="guest")
+    guest = User(
+        username="Guest", email="login_as_guest@example.com", password="login_as_guest"
+    )
     guest.is_active = True
     db.session.add(guest)
     try:

@@ -1,6 +1,6 @@
 from typing import *
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.ext.hybrid import hybrid_property
 from fractions import Fraction as frac
 from app import db, login
@@ -189,6 +189,14 @@ class Worker(db.Model):
         elif n_type == "messages":
             return len(self.get_new_messages())
         return 0
+
+    def get_coming_tasks(self) -> List:
+        return (
+            Task.query.filter_by(executor_id=self.id)
+            .filter(Task.progress != 100)
+            .filter(Task.deadline < datetime.utcnow() + timedelta(days=7))
+            .all()
+        )
 
 
 class Investment(db.Model):

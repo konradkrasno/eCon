@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title_content %}
+    {% if current_user.username %}
+    Hi, {{ current_user.username }}
+    {% endif %}
+{% endblock %}
+{% block app_content %}
+
+{% endblock %}

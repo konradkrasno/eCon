@@ -6,5 +6,60 @@
     {% endif %}
 {% endblock %}
 {% block app_content %}
+    {% if g.current_worker.id %}
+        <h6>Current Investment: {{ g.current_invest.name }}</h6>
+        <br>
+        {% if coming_tasks %}
+            <h5>Coming Tasks</h5><br>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th class="text-center">Description</th>
+                  <th class="text-center">Deadline</th>
+                    <th class="text-center">Priority</th>
+                    <th class="text-center">Orderer</th>
+                    <th class="text-center">Executor</th>
+                    <th class="text-center">Progress</th>
+                    <th class="text-center">Creation Date</th>
+                    <th class="text-center"></th>
+                </tr>
+              </thead>
+              <tbody>
+            {% for task in coming_tasks %}
+              <tr>
+                  <td class="text-center">{{ task.description }}</td>
+                  <td class="text-center">{{ task.deadline.strftime('%Y-%m-%d') }}</td>
+                  <td class="text-center">{{ task.priority }}</td>
+                  <td class="text-center">
+                      <a href="{{ url_for('main.user', username=task.orderer.users.username) }}" >
+                          {{ task.orderer.users.username }}
+                      </a>
+                  </td>
+                  <td class="text-center">
+                      <a href="{{ url_for('main.user', username=task.executor.users.username) }}" >
+                          {{ task.executor.users.username }}
+                      </a>
+                  </td>
+                  <td class="text-center">{{ task.progress }}</td>
+                  <td class="text-center">{{ task.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                  <td class="text-center">
+                      <div class="btn-toolbar mb-2 mb-md-0">
+                          <div class="btn-group mr-1">
+                              <button type="button" class="btn btn-sm btn-outline-secondary">
+                                  <a href="{{ url_for('tasks.change_progress', _id=task.id, next_page=url_for('main.index')) }}">Change Progress</a>
+                              </button>
+                          </div>
+                      </div>
+                  </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+            <h5>You have no coming tasks.</h5>
+        {% endif %}
+    {% else %}
+        <h5>You have no investment selected. <a href="{{ url_for('investments.invest_list') }}">Click</a> to choose investment.</h5>
+    {% endif %}
 
 {% endblock %}

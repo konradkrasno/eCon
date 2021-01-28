@@ -350,15 +350,20 @@ class TestWorker:
         assert Worker.get_team(investment_id=1) == [worker1, worker2, worker3]
 
     @staticmethod
-    def test_get_new_tasks(app_and_db, add_tasks):
-        db = app_and_db[1]
+    def test_get_new_tasks(add_tasks):
         user = User.query.filter_by(username="active_user").first()
         investment = Investment.query.filter_by(name="Test Invest").first()
-        user.current_invest_id = investment.id
-        db.session.commit()
         worker = Worker.get_by_username(investment.id, user.username)
         assert worker.last_time_tasks_displayed
         assert worker.get_new_tasks()
+
+    @staticmethod
+    def test_get_coming_tasks(add_tasks):
+        user = User.query.filter_by(username="active_user").first()
+        investment = Investment.query.filter_by(name="Test Invest").first()
+        worker = Worker.get_by_username(investment.id, user.username)
+        task = Task.query.filter_by(description="test task 2").first()
+        assert worker.get_coming_tasks() == [task]
 
 
 class TestInvestment:
