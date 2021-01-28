@@ -25,7 +25,7 @@ def get_random_guest_name() -> str:
     response = requests.post(
         "https://random.api.randomkey.io/v1/name/full",
         headers={
-            "auth": "5c7e33794b7b18f5cc682f4c0bd15b27",
+            "auth": os.environ.get("RANDOMKEY_TOKEN"),
             "Content-Type": "application/json",
         },
         json={"gender": "0", "region": "us", "records": 1},
