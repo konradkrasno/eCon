@@ -7,12 +7,6 @@ from app import r
 from app.redis_client import get_notification
 
 
-@bp.before_app_first_request
-def before_first_request():
-    if not User.query.filter_by(username="Guest").first():
-        populate_db()
-
-
 @bp.before_app_request
 def before_request():
     if current_user.is_authenticated:
@@ -66,6 +60,6 @@ def user(username: str) -> str:
 
 @bp.route("/guest", methods=["GET", "POST"])
 def login_as_guest():
-    user = User.query.filter_by(username="Guest").first()
-    login_user(user, remember=True)
+    guest = populate_db()
+    login_user(guest, remember=True)
     return redirect(url_for("main.index"))

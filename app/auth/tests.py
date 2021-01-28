@@ -174,7 +174,8 @@ class TestEditProfile:
 
 class TestActivateEmail:
     @staticmethod
-    def test_post_with_valid_email(client, test_with_authenticated_user):
+    def test_post_with_valid_email(client, mocker, test_with_authenticated_user):
+        mocker.patch("app.auth.email.send_change_email_confirmation")
         form = EditProfileForm(
             original_username=current_user.username,
             original_email=current_user.email,
