@@ -3,7 +3,7 @@ from flask_login import login_required, login_user, current_user
 from app.main import bp
 from app.models import User, Worker
 from app.main.populate_db import populate_db
-from app import r
+from app import db, r
 from app.redis_client import get_notification
 
 
@@ -64,3 +64,14 @@ def login_as_guest():
     guest = populate_db()
     login_user(guest, remember=True)
     return redirect(url_for("main.index"))
+
+
+@bp.app_errorhandler(404)
+def not_found_error(error):
+    return render_template("404.html"), 404
+
+
+@bp.app_errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template("500.html"), 500

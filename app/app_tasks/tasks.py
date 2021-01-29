@@ -52,10 +52,11 @@ def send_email(
 @celery.task
 def delete_if_unused(user_id: int) -> None:
     user = User.get_user(user_id)
-    if hasattr(user, "last_activity") and user.last_activity + timedelta(seconds=300) < datetime.utcnow():
-        for investment in Investment.get_by_user_id(user.id):
-            db.session.delete(investment)
-        db.session.delete(user)
-        db.session.commit()
-    else:
-        delete_if_unused.apply_async(args=(user.id,), countdown=600)
+    if user:
+        if user.last_activity + timedelta(seconds=300) < datetime.utcnow():
+            for investment in Investment.get_by_user_id(user.id):
+                db.session.delete(investment)
+            db.session.delete(user)
+            db.session.commit()
+        else:
+            delete_if_unused.apply_async(args=(user.id,), countdown=600)
