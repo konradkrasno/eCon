@@ -21,7 +21,7 @@ def get_or_create_user(username: str) -> User:
     return user
 
 
-def get_random_guest_name() -> str:
+def get_random_guest_name(ip: str) -> str:
     response = requests.post(
         "https://random.api.randomkey.io/v1/name/full",
         headers={
@@ -30,7 +30,7 @@ def get_random_guest_name() -> str:
         },
         json={"gender": "0", "region": "us", "records": 1},
     )
-    username = "Guest"
+    username = f"Guest ({ip})"
     if response.status_code == 200:
         name = response.json().get("name", None)
         if name:
@@ -38,9 +38,9 @@ def get_random_guest_name() -> str:
     return username
 
 
-def populate_db() -> User:
+def populate_db(ip: str) -> User:
     # Users
-    guest = get_or_create_user(get_random_guest_name())
+    guest = get_or_create_user(get_random_guest_name(ip))
     user2 = get_or_create_user("Fryderyk Pawlak")
     user3 = get_or_create_user("Karina Tomaszewska")
     user4 = get_or_create_user("Jacek Chmiel")

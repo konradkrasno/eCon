@@ -60,6 +60,7 @@ def user(username: str) -> str:
 
 @bp.route("/guest", methods=["GET", "POST"])
 def login_as_guest():
-    guest = populate_db()
+    ip = request.remote_addr
+    guest = populate_db(ip)
     login_user(guest, remember=True)
     return redirect(url_for("main.index"))
