@@ -10,6 +10,7 @@ from app.redis_client import get_notification
 @bp.before_app_request
 def before_request():
     if current_user.is_authenticated:
+        current_user.update_last_activity()
         g.current_invest = current_user.get_current_invest()
         g.current_worker = Worker.get_by_username(
             g.current_invest.id, current_user.username
@@ -60,7 +61,6 @@ def user(username: str) -> str:
 
 @bp.route("/guest", methods=["GET", "POST"])
 def login_as_guest():
-    ip = request.remote_addr
-    guest = populate_db(ip)
+    guest = populate_db()
     login_user(guest, remember=True)
     return redirect(url_for("main.index"))

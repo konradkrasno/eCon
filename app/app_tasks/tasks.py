@@ -3,12 +3,13 @@ from typing import *
 import os
 import shutil
 from time import sleep
+from datetime import datetime, timedelta
 
 from app.app_tasks import create_celery_app
-from app import r
 from app.redis_client import create_notification, add_notification
 from flask_mail import Message
-from app import mail
+from app import mail, db, r
+from app.models import User, Investment
 
 
 celery = create_celery_app()
@@ -46,3 +47,15 @@ def send_email(
     msg.body = text_body
     msg.html = html_body
     mail.send(msg)
+
+
+@celery.task
+def delete_if_unused(user_id: int) -> None:
+    user = User.get_user(user_id)
+    if hasattr(user, "last_activity") and user.last_activity + timedelta(seconds=300) < datetime.utcnow():
+        for investment in Investment.get_by_user_id(user.id):
+            db.session.delete(investment)
+        db.session.delete(user)
+        db.session.commit()
+    else:
+        delete_if_unused.apply_async(args=(user.id,), countdown=600)

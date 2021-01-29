@@ -1,12 +1,13 @@
 import requests
 import os
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from app import db
 from app.models import User, Investment, Worker, Task
+from app.app_tasks import tasks
 
 
-def get_or_create_user(username: str) -> User:
+def get_or_create_user(username: str, guest: bool = False) -> User:
     user = User.query.filter_by(username=username).first()
     if not user:
         user = User(
@@ -18,10 +19,12 @@ def get_or_create_user(username: str) -> User:
         db.session.add(user)
         db.session.commit()
         user = User.query.filter_by(username=username).first()
+        if guest:
+            tasks.delete_if_unused.apply_async(args=(user.id,), countdown=600)
     return user
 
 
-def get_random_guest_name(ip: str) -> str:
+def get_random_guest_name() -> str:
     response = requests.post(
         "https://random.api.randomkey.io/v1/name/full",
         headers={
@@ -30,7 +33,7 @@ def get_random_guest_name(ip: str) -> str:
         },
         json={"gender": "0", "region": "us", "records": 1},
     )
-    username = f"Guest ({ip})"
+    username = f"Guest ({datetime.utcnow().isoformat()})"
     if response.status_code == 200:
         name = response.json().get("name", None)
         if name:
@@ -38,9 +41,9 @@ def get_random_guest_name(ip: str) -> str:
     return username
 
 
-def populate_db(ip: str) -> User:
+def populate_db() -> User:
     # Users
-    guest = get_or_create_user(get_random_guest_name(ip))
+    guest = get_or_create_user(get_random_guest_name(), guest=True)
     user2 = get_or_create_user("Fryderyk Pawlak")
     user3 = get_or_create_user("Karina Tomaszewska")
     user4 = get_or_create_user("Jacek Chmiel")

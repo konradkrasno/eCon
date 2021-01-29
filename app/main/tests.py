@@ -1,5 +1,6 @@
 from flask import url_for
 from app.models import User
+from app.main.populate_db import get_or_create_user
 
 
 class TestIndex:
@@ -33,3 +34,9 @@ class TestUploadFiles:
     @staticmethod
     def test_post(client, test_with_authenticated_user):
         pass
+
+
+class TestPopulateDB:
+    @staticmethod
+    def test_get_or_create_user(app_and_db):
+        assert get_or_create_user("test_user", guest=True)

@@ -13,7 +13,7 @@ from app.redis_client import create_notification, add_notification
 def tasks():
     new_tasks = g.current_worker.get_new_tasks()
     if g.current_worker.id:
-        g.current_worker.update_attr("last_time_tasks_displayed")
+        g.current_worker.update_last_activity("last_time_tasks_displayed")
     tasks_in_progress = Task.get_in_progress(invest_id=g.current_invest.id)
     realized_tasks = Task.get_realized(invest_id=g.current_invest.id)
     admin = Worker.is_admin(user_id=current_user.id, investment_id=g.current_invest.id)

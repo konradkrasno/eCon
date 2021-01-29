@@ -34,6 +34,7 @@ class User(UserMixin, db.Model):
         cascade="all, delete",
         passive_deletes=True,
     )
+    last_activity = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __init__(self, username: str, email: str, password: str):
         self.username = username
@@ -93,6 +94,10 @@ class User(UserMixin, db.Model):
         if investment:
             return investment
         return Investment()
+
+    def update_last_activity(self):
+        self.last_activity = datetime.utcnow()
+        db.session.commit()
 
     def __repr__(self) -> str:
         return "<User(username=%s)>" % (self.username,)
@@ -165,7 +170,7 @@ class Worker(db.Model):
     def get_team(cls, investment_id: int) -> List:
         return cls.query.filter_by(investment_id=investment_id).order_by("id").all()
 
-    def update_attr(self, attr: str) -> None:
+    def update_last_activity(self, attr: str) -> None:
         setattr(self, attr, datetime.utcnow())
         db.session.commit()
 
