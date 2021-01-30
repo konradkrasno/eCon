@@ -43,4 +43,6 @@ class TestPopulateDB:
     def test_get_or_create_user(app_and_db, mocker):
         mocker.patch("app.app_tasks.tasks.delete_if_unused.apply_async")
         assert get_or_create_user("test_user", guest=True)
-        delete_if_unused.apply_async.assert_called_once_with(args=("test_user",), countdown=600)
+        delete_if_unused.apply_async.assert_called_once_with(
+            args=("test_user",), countdown=600
+        )

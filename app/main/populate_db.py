@@ -2,10 +2,12 @@ import os
 from datetime import date, timedelta, datetime
 
 import requests
+from sqlalchemy.exc import IntegrityError
 
-from app import db
+from app import db, r
 from app.app_tasks import tasks
 from app.models import User, Investment, Worker, Task
+from app.redis_client import create_notification, add_notification
 
 
 def get_or_create_user(username: str, guest: bool = False) -> User:
@@ -44,7 +46,14 @@ def get_random_guest_name() -> str:
 
 def populate_db() -> User:
     # Users
-    guest = get_or_create_user(get_random_guest_name(), guest=True)
+    while True:
+        try:
+            guest = get_or_create_user(get_random_guest_name(), guest=True)
+        except IntegrityError:
+            db.session.rollback()
+        else:
+            break
+
     user2 = get_or_create_user("Fryderyk Pawlak")
     user3 = get_or_create_user("Karina Tomaszewska")
     user4 = get_or_create_user("Jacek Chmiel")
@@ -58,8 +67,9 @@ def populate_db() -> User:
     worker5 = Worker(position="Quantity Engineer", admin=False, user_id=user5.id)
 
     # Tasks
+    description = "Get to know eCon"
     task1 = Task(
-        description="Get to know eCon",
+        description=description,
         deadline=date.today() + timedelta(days=2),
         priority=5,
         orderer=worker2,
@@ -95,5 +105,13 @@ def populate_db() -> User:
     invest.tasks.append(task3)
     db.session.add(invest)
     db.session.commit()
+
+    # Task notification
+    notification = create_notification(
+        worker_id=guest.workers.first().id,
+        n_type="task",
+        description=f"You have a new task: '{description}' from {user2.username}",
+    )
+    add_notification(r, notification)
 
     return guest

@@ -193,7 +193,8 @@
                     if (notifications[i]) {
                       window.createNotification({
                         theme: 'success',
-                        showDuration: 5000
+                        closeOnClick: true,
+                        displayCloseButton: true,
                         })({
                             message: notifications[i].description
                         });
@@ -201,7 +202,7 @@
                   }
                 }
             );
-        }, 10000);
+        }, 5000);
     });
     {% endif %}
 </script>
