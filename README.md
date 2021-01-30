@@ -1,4 +1,6 @@
 # eCon
+![Coverage](https://img.shields.io/coveralls/github/konradkrasno/eCon)
+
 A platform to gather the construction site management aspects in one place.
 It allows you to manage team tasks, communication between team members,
 storage of documents, and calculation of the quantity survey of works.
@@ -17,21 +19,29 @@ storage of documents, and calculation of the quantity survey of works.
 - [ ] Creating a custom page for quantity survey of works
 - [x] Creating tasks for team members
 - [ ] Creating chat for team members
-- [ ] Creating documents archiving
+- [x] Creating documents archiving
 
 #### Example pages
 
-Investments page:
+Index page:
 
-![investments](https://user-images.githubusercontent.com/55924004/103815285-69168500-5063-11eb-83e2-5056920c8893.PNG)
+![index](https://user-images.githubusercontent.com/55924004/106360787-c9bf7780-631a-11eb-9985-73ab18dee188.png)
 
 Team page:
 
-![team](https://user-images.githubusercontent.com/55924004/103815534-c9a5c200-5063-11eb-9a92-32946cbded2a.PNG)
+![team](https://user-images.githubusercontent.com/55924004/106360790-caf0a480-631a-11eb-8d85-88110e43d1ed.PNG)
+
+Tasks page:
+
+![tasks](https://user-images.githubusercontent.com/55924004/106360973-b6f97280-631b-11eb-8b4f-12c616a6ad2c.png)
+
+Documents page:
+
+![documents](https://user-images.githubusercontent.com/55924004/106360786-c926e100-631a-11eb-8584-a126d3e60506.png)
 
 Quantity survey of masonry works page:
 
-![masonry_works](https://user-images.githubusercontent.com/55924004/103815332-83506300-5063-11eb-8484-ccba8c7d794a.PNG)
+![masonry_works](https://user-images.githubusercontent.com/55924004/106360933-78fc4e80-631b-11eb-9831-59d8775d1aa9.PNG)
 
 ### Running on development server
 Clone the repository:
