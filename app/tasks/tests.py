@@ -1,9 +1,11 @@
 from datetime import date, timedelta
-from flask_login import current_user
+
 from flask import url_for
-from app.models import Task, Worker, Investment
-from app.tasks.forms import TaskForm, ProgressForm
+from flask_login import current_user
+
 from app.main.forms import WarrantyForm
+from app.models import Task
+from app.tasks.forms import TaskForm, ProgressForm
 
 
 class TestTasks:

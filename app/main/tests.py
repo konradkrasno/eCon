@@ -1,6 +1,7 @@
 from flask import url_for
-from app.models import User
+
 from app.main.populate_db import get_or_create_user
+from app.models import User
 
 
 class TestIndex:

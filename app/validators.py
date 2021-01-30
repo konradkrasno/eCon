@@ -1,8 +1,9 @@
-from typing import *
-from app import db
-
 from fractions import Fraction as frac
+from typing import *
+
 from wtforms.validators import ValidationError
+
+from app import db
 
 
 def is_nan(x):

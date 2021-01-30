@@ -1,10 +1,11 @@
-import requests
 import os
-
 from datetime import date, timedelta, datetime
+
+import requests
+
 from app import db
-from app.models import User, Investment, Worker, Task
 from app.app_tasks import tasks
+from app.models import User, Investment, Worker, Task
 
 
 def get_or_create_user(username: str, guest: bool = False) -> User:

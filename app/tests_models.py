@@ -1,8 +1,7 @@
 import pytest
-import datetime
 
-from app.models import Hole, Processing, Wall, User, Investment, Worker, Task
 from app.conftest import contexts_required
+from app.models import Hole, Processing, Wall, User, Investment, Worker, Task
 
 
 class TestMasonryWorks:

@@ -1,4 +1,5 @@
 from flask import render_template
+
 from app.production.custom_registry import bp
 from app.production.custom_registry.forms import CreateTableForm, CreateColumnForm
 

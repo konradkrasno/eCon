@@ -1,9 +1,10 @@
 from flask import url_for
 from flask_login import current_user
+
+from app.auth import email
+from app.main.forms import WarrantyForm
 from app.models import User, Investment, Worker
 from app.team.forms import CreateWorkerForm, EditWorkerForm
-from app.main.forms import WarrantyForm
-from app.auth import email
 
 
 class TestTeam:

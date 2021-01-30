@@ -1,6 +1,6 @@
-from datetime import datetime
-from flask import render_template, redirect, url_for, flash, request, g
+from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
+
 from app import db
 from app.investments import bp
 from app.investments.forms import InvestmentForm

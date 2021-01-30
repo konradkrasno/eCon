@@ -1,8 +1,9 @@
 from flask import render_template
-from app.models import User
-from app.auth.token import get_confirmation_token
-from config import config
+
 from app.app_tasks import tasks
+from app.auth.token import get_confirmation_token
+from app.models import User
+from config import config
 
 
 def send_password_reset_confirmation(user: User) -> None:

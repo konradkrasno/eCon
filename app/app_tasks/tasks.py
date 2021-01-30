@@ -1,16 +1,15 @@
-from typing import *
-
 import os
 import shutil
-from time import sleep
 from datetime import datetime, timedelta
+from time import sleep
+from typing import *
 
-from app.app_tasks import create_celery_app
-from app.redis_client import create_notification, add_notification
 from flask_mail import Message
-from app import mail, db, r
-from app.models import User, Investment
 
+from app import mail, db, r
+from app.app_tasks import create_celery_app
+from app.models import User, Investment
+from app.redis_client import create_notification, add_notification
 
 celery = create_celery_app()
 

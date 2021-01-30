@@ -1,9 +1,14 @@
+from datetime import datetime, timedelta
+from fractions import Fraction as frac
 from typing import *
 
-from datetime import datetime, timedelta
+from flask_login import UserMixin
 from sqlalchemy.ext.hybrid import hybrid_property
-from fractions import Fraction as frac
+from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms.validators import ValidationError
+
 from app import db, login
+from app.handling_files import read_csv_file
 from app.validators import (
     check_field_exists,
     validate_walls,
@@ -12,10 +17,6 @@ from app.validators import (
     validate_done_attr_while_adding,
     validate_done_attr_while_editing,
 )
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
-from wtforms.validators import ValidationError
-from app.handling_files import read_csv_file
 
 
 class User(UserMixin, db.Model):

@@ -1,5 +1,7 @@
-from flask import url_for, session
+from flask import url_for
 from flask_login import current_user
+
+from app.auth import email
 from app.auth.forms import (
     LoginForm,
     RegisterForm,
@@ -8,10 +10,9 @@ from app.auth.forms import (
     ResetPasswordForm,
     CompleteRegistrationForm,
 )
-from app.main.forms import WarrantyForm
 from app.auth.token import get_confirmation_token, verify_token
+from app.main.forms import WarrantyForm
 from app.models import User, Investment, Worker
-from app.auth import email
 
 
 def test_token():

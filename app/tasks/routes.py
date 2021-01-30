@@ -1,11 +1,12 @@
 from flask import render_template, redirect, url_for, flash, g, request
 from flask_login import login_required, current_user
+
 from app import db, r
-from app.tasks import bp
-from app.models import Task, Worker
-from app.tasks.forms import TaskForm, ProgressForm
 from app.main.forms import WarrantyForm
+from app.models import Task, Worker
 from app.redis_client import create_notification, add_notification
+from app.tasks import bp
+from app.tasks.forms import TaskForm, ProgressForm
 
 
 @bp.route("/")
