@@ -1,5 +1,3 @@
-from sqlalchemy.exc import IntegrityError
-from werkzeug.urls import url_parse
 from flask import (
     render_template,
     flash,
@@ -8,8 +6,12 @@ from flask import (
     request,
 )
 from flask_login import login_user, logout_user, current_user, login_required
+from sqlalchemy.exc import IntegrityError
+from werkzeug.urls import url_parse
+
 from app import db
 from app.auth import bp
+from app.auth import email
 from app.auth.forms import (
     LoginForm,
     RegisterForm,
@@ -18,10 +20,9 @@ from app.auth.forms import (
     ResetPasswordForm,
     CompleteRegistrationForm,
 )
+from app.auth.token import verify_token
 from app.main.forms import WarrantyForm
 from app.models import User
-from app.auth.token import verify_token
-from app.auth import email
 
 
 @bp.route("/login", methods=["GET", "POST"])

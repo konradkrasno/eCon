@@ -1,7 +1,7 @@
 from celery import Celery, Task
-from config import config
-from app import create_app
 
+from app import create_app
+from config import config
 
 CELERY_TASK_LIST = [
     "app.app_tasks.tasks",

@@ -7,7 +7,7 @@ storage of documents, and calculation of the quantity survey of works.
 * Flask
 * Sqlalchemy
 * Celery
-* Docker
+* Redis
 
 ### Design goals
 - [x] Registering users and their authorization

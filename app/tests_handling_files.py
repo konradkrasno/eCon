@@ -1,5 +1,5 @@
-from app.handling_files import read_csv_file, read_csv_files
 from app.conftest import contexts_required
+from app.handling_files import read_csv_file, read_csv_files
 
 
 @contexts_required

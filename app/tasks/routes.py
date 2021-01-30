@@ -1,19 +1,12 @@
 from flask import render_template, redirect, url_for, flash, g, request
 from flask_login import login_required, current_user
+
 from app import db, r
-from app.tasks import bp
-from app.models import Task, Worker
-from app.tasks.forms import TaskForm, ProgressForm
 from app.main.forms import WarrantyForm
+from app.models import Task, Worker
 from app.redis_client import create_notification, add_notification
-
-
-@bp.before_app_request
-def before_request():
-    if current_user.is_authenticated:
-        g.current_worker = Worker.get_by_username(
-            g.current_invest.id, current_user.username
-        )
+from app.tasks import bp
+from app.tasks.forms import TaskForm, ProgressForm
 
 
 @bp.route("/")
@@ -21,7 +14,7 @@ def before_request():
 def tasks():
     new_tasks = g.current_worker.get_new_tasks()
     if g.current_worker.id:
-        g.current_worker.update_attr("last_time_tasks_displayed")
+        g.current_worker.update_last_activity("last_time_tasks_displayed")
     tasks_in_progress = Task.get_in_progress(invest_id=g.current_invest.id)
     realized_tasks = Task.get_realized(invest_id=g.current_invest.id)
     admin = Worker.is_admin(user_id=current_user.id, investment_id=g.current_invest.id)

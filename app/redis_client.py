@@ -1,7 +1,7 @@
+import json
 from typing import *
 
 import redis
-import json
 
 
 def create_notification(worker_id: int, n_type: str, description: str) -> Dict:

@@ -1,7 +1,8 @@
+from time import time
 from typing import *
 
 import jwt
-from time import time
+
 from config import config
 
 

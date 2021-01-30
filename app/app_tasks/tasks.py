@@ -1,15 +1,15 @@
-from typing import *
-
 import os
 import shutil
+from datetime import datetime, timedelta
 from time import sleep
+from typing import *
 
-from app.app_tasks import create_celery_app
-from app import r
-from app.redis_client import create_notification, add_notification
 from flask_mail import Message
-from app import mail
 
+from app import mail, db, r
+from app.app_tasks import create_celery_app
+from app.models import User, Investment
+from app.redis_client import create_notification, add_notification
 
 celery = create_celery_app()
 
@@ -46,3 +46,16 @@ def send_email(
     msg.body = text_body
     msg.html = html_body
     mail.send(msg)
+
+
+@celery.task
+def delete_if_unused(username: str) -> None:
+    user = User.query.filter_by(username=username).first()
+    if user:
+        if user.last_activity + timedelta(seconds=300) < datetime.utcnow():
+            for investment in Investment.get_by_user_id(user.id):
+                db.session.delete(investment)
+            db.session.delete(user)
+            db.session.commit()
+        else:
+            delete_if_unused.apply_async(args=(user.id,), countdown=600)

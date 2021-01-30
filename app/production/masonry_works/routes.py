@@ -1,16 +1,17 @@
-from werkzeug.utils import secure_filename
 from flask import render_template, flash, redirect, url_for, request, g
 from flask_login import login_required
-from app.production.masonry_works import bp
+from werkzeug.utils import secure_filename
+
+from app.handling_files import allowed_file, save_file, handle_csv
+from app.main.forms import WarrantyForm
 from app.models import Hole, Processing, Wall
+from app.production.masonry_works import bp
+from app.production.masonry_works.data_treatment import TotalAreas, Categories
 from app.production.masonry_works.forms import (
     WallForm,
     HoleForm,
     ProcessingForm,
 )
-from app.main.forms import WarrantyForm
-from app.production.masonry_works.data_treatment import TotalAreas, Categories
-from app.handling_files import allowed_file, save_file, handle_csv
 
 
 @bp.route("/walls")

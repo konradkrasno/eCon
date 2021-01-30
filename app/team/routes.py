@@ -2,12 +2,13 @@ import uuid
 
 from flask import render_template, redirect, url_for, flash, g, request
 from flask_login import login_required, current_user
+
 from app import db
-from app.team import bp
-from app.team.forms import CreateWorkerForm, EditWorkerForm
+from app.auth import email
 from app.main.forms import WarrantyForm
 from app.models import Worker, User, Investment
-from app.auth import email
+from app.team import bp
+from app.team.forms import CreateWorkerForm, EditWorkerForm
 
 
 @bp.route("/")

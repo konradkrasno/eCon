@@ -1,8 +1,10 @@
 import datetime
+
 from flask import g
 from flask_wtf import FlaskForm
 from wtforms import StringField, DateField, IntegerField, SelectField, SubmitField
 from wtforms.validators import DataRequired, ValidationError
+
 from app.models import Worker
 
 

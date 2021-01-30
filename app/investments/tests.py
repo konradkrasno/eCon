@@ -1,8 +1,9 @@
 from flask import url_for
 from flask_login import current_user
-from app.models import User, Investment, Worker
+
 from app.investments.forms import InvestmentForm
 from app.main.forms import WarrantyForm
+from app.models import User, Investment, Worker
 
 
 class TestInvestList:

@@ -6,6 +6,7 @@ from wtforms import (
     SubmitField,
 )
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
+
 from app.models import User
 
 

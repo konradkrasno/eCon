@@ -1,7 +1,6 @@
-import os
 import glob
+import os
 
-from werkzeug.utils import secure_filename
 from flask import (
     render_template,
     redirect,
@@ -12,17 +11,19 @@ from flask import (
     g,
 )
 from flask_login import login_required
+from werkzeug.utils import secure_filename
+
+from app.app_tasks import tasks
 from app.documents import bp
 from app.documents.forms import NewFolderForm
-from app.main.forms import WarrantyForm
+from app.handling_files import allowed_file, save_file
 from app.handling_files import (
     remove,
     create_new_folder,
     get_metadata,
     get_current_and_prev_path,
 )
-from app.handling_files import allowed_file, save_file
-from app.app_tasks import tasks
+from app.main.forms import WarrantyForm
 
 
 @bp.route("/")

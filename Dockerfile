@@ -9,3 +9,5 @@ WORKDIR $APP_HOME
 COPY . /econ
 
 RUN pip install -r requirements.txt
+
+EXPOSE 5000

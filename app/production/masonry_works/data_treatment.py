@@ -1,6 +1,5 @@
-from typing import *
-
 from fractions import Fraction as frac
+from typing import *
 
 
 class Categories:

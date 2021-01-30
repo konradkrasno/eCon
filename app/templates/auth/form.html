@@ -3,6 +3,10 @@
 
 {% block title_content %}{{ title }}{% endblock %}
 {% block app_content %}
+    <h6>
+        If you want to test the app, <a href="{{ url_for('main.login_as_guest')}}">click</a> to log in as Guest.
+    </h6><br>
+
     {% if title == 'Reset Password' %}
     <h6>Enter your email address to reset the password:</h6>
     {% endif %}
@@ -16,9 +20,6 @@
     {% if title == 'Log In' %}
     <p>Forgot your password?
         <a href="{{ url_for('auth.reset_password_request') }}">Reset Password</a>
-    </p>
-    <p>
-        <a href="{{ url_for('main.guest')}}">Click to play with generated data.</a>
     </p>
     {% endif %}
 

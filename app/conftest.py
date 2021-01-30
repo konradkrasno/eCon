@@ -1,16 +1,15 @@
+import datetime
+import os
+from contextlib import contextmanager
 from typing import *
 
 import pytest
-import os
-import datetime
-
-from contextlib import contextmanager
 from flask import template_rendered
 from flask_login import AnonymousUserMixin
-from app import create_app, db, login, r
-from config import config, BASE_DIR
-from app.models import Wall, User, Investment, Worker, Task
 
+from app import create_app, db, login, r
+from app.models import Wall, User, Investment, Worker, Task
+from config import config, BASE_DIR
 
 contexts_required = pytest.mark.skipif(
     not os.path.exists(os.path.join(BASE_DIR, config["UPLOAD_FOLDER"], "temp/test")),
@@ -108,6 +107,11 @@ def add_investment(app_and_db, active_user, unlogged_user):
     investment.workers.append(worker1)
     investment.workers.append(worker2)
     db.session.add(investment)
+    db.session.commit()
+
+    # setting current_invest
+    investment = Investment.query.filter_by(name="Test Invest").first()
+    user1.current_invest_id = investment.id
     db.session.commit()
 
 

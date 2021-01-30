@@ -1,17 +1,11 @@
-from datetime import datetime
-from flask import render_template, redirect, url_for, flash, request, g
+from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
+
 from app import db
 from app.investments import bp
 from app.investments.forms import InvestmentForm
 from app.main.forms import WarrantyForm
 from app.models import Investment, Worker
-
-
-@bp.before_app_request
-def before_request():
-    if current_user.is_authenticated:
-        g.current_invest = current_user.get_current_invest()
 
 
 @bp.route("/")
@@ -65,7 +59,7 @@ def info(_id: int) -> str:
 def choose(_id: int) -> str:
     current_user.current_invest_id = _id
     db.session.commit()
-    return redirect(url_for("investments.invest_list"))
+    return redirect(url_for("main.index"))
 
 
 @bp.route("/edit", methods=["GET", "POST"])

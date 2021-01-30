@@ -1,13 +1,14 @@
 from flask import url_for
 from flask_login import current_user
-from app.production.masonry_works.data_treatment import Categories, TotalAreas
+
+from app.main.forms import WarrantyForm
 from app.models import Wall, Hole, Processing, Investment
+from app.production.masonry_works.data_treatment import Categories, TotalAreas
 from app.production.masonry_works.forms import (
     WallForm,
     HoleForm,
     ProcessingForm,
 )
-from app.main.forms import WarrantyForm
 
 
 class TestWalls:

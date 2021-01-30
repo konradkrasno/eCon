@@ -1,5 +1,7 @@
-from flask import url_for, session
+from flask import url_for
 from flask_login import current_user
+
+from app.auth import email
 from app.auth.forms import (
     LoginForm,
     RegisterForm,
@@ -8,10 +10,9 @@ from app.auth.forms import (
     ResetPasswordForm,
     CompleteRegistrationForm,
 )
-from app.main.forms import WarrantyForm
 from app.auth.token import get_confirmation_token, verify_token
+from app.main.forms import WarrantyForm
 from app.models import User, Investment, Worker
-from app.auth import email
 
 
 def test_token():
@@ -174,7 +175,8 @@ class TestEditProfile:
 
 class TestActivateEmail:
     @staticmethod
-    def test_post_with_valid_email(client, test_with_authenticated_user):
+    def test_post_with_valid_email(client, mocker, test_with_authenticated_user):
+        mocker.patch("app.auth.email.send_change_email_confirmation")
         form = EditProfileForm(
             original_username=current_user.username,
             original_email=current_user.email,
@@ -256,7 +258,9 @@ class TestResetPasswordRequest:
         assert isinstance(context["form"], ResetPasswordForm)
 
     @staticmethod
-    def test_post_with_right_email(client, mocker, unlogged_user, test_with_anonymous_user):
+    def test_post_with_right_email(
+        client, mocker, unlogged_user, test_with_anonymous_user
+    ):
         mocker.patch("app.auth.email.send_password_reset_confirmation")
         form = ResetPasswordForm(email="unlogged_user@email.com")
         response = client.post(
@@ -270,7 +274,9 @@ class TestResetPasswordRequest:
         assert b"Check your email to reset your password." in response.data
 
     @staticmethod
-    def test_post_with_wrong_email(client, mocker, unlogged_user, test_with_anonymous_user):
+    def test_post_with_wrong_email(
+        client, mocker, unlogged_user, test_with_anonymous_user
+    ):
         mocker.patch("app.auth.email.send_password_reset_confirmation")
         form = ResetPasswordForm(email="wrong@email.com")
         response = client.post(
