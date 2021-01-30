@@ -21,7 +21,7 @@ def get_or_create_user(username: str, guest: bool = False) -> User:
         db.session.commit()
         user = User.query.filter_by(username=username).first()
         if guest:
-            tasks.delete_if_unused.apply_async(args=(user.id,), countdown=600)
+            tasks.delete_if_unused.apply_async(args=(username,), countdown=600)
     return user
 
 

@@ -2,6 +2,7 @@ from flask import url_for
 
 from app.main.populate_db import get_or_create_user
 from app.models import User
+from app.app_tasks.tasks import delete_if_unused
 
 
 class TestIndex:
@@ -39,5 +40,7 @@ class TestUploadFiles:
 
 class TestPopulateDB:
     @staticmethod
-    def test_get_or_create_user(app_and_db):
+    def test_get_or_create_user(app_and_db, mocker):
+        mocker.patch("app.app_tasks.tasks.delete_if_unused.apply_async")
         assert get_or_create_user("test_user", guest=True)
+        delete_if_unused.apply_async.assert_called_once_with(args=("test_user",), countdown=600)

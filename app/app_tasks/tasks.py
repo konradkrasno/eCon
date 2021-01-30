@@ -49,8 +49,8 @@ def send_email(
 
 
 @celery.task
-def delete_if_unused(user_id: int) -> None:
-    user = User.get_user(user_id)
+def delete_if_unused(username: str) -> None:
+    user = User.query.filter_by(username=username).first()
     if user:
         if user.last_activity + timedelta(seconds=300) < datetime.utcnow():
             for investment in Investment.get_by_user_id(user.id):
