@@ -1,5 +1,5 @@
 # eCon
-![Coverage](https://img.shields.io/coveralls/github/konradkrasno/eCon)
+![Alt text](./coverage.svg)
 
 A platform to gather the construction site management aspects in one place.
 It allows you to manage team tasks, communication between team members,
