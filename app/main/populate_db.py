@@ -1,13 +1,11 @@
-import os
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 
-import requests
 from sqlalchemy.exc import IntegrityError
 
 from app import db, r
 from app.app_tasks import tasks
 from app.models import User, Investment, Worker, Task
-from app.redis_client import create_notification, add_notification
+from app.redis_client import create_notification, add_notification, get_fake_name_from_buffer
 
 
 def get_or_create_user(username: str, guest: bool = False) -> User:
@@ -27,28 +25,12 @@ def get_or_create_user(username: str, guest: bool = False) -> User:
     return user
 
 
-def get_random_guest_name() -> str:
-    response = requests.post(
-        "https://random.api.randomkey.io/v1/name/full",
-        headers={
-            "auth": os.environ.get("RANDOMKEY_TOKEN"),
-            "Content-Type": "application/json",
-        },
-        json={"gender": "0", "region": "us", "records": 1},
-    )
-    username = f"Guest ({datetime.utcnow().isoformat()})"
-    if response.status_code == 200:
-        name = response.json().get("name", None)
-        if name:
-            username = name
-    return username
-
-
 def populate_db() -> User:
     # Users
     while True:
+        guest_name = get_fake_name_from_buffer(r)
         try:
-            guest = get_or_create_user(get_random_guest_name(), guest=True)
+            guest = get_or_create_user(guest_name, guest=True)
         except IntegrityError:
             db.session.rollback()
         else:

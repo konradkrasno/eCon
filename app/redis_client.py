@@ -3,6 +3,8 @@ from typing import *
 
 import redis
 
+from app.app_tasks import tasks
+
 
 def create_notification(worker_id: int, n_type: str, description: str) -> Dict:
     return {"worker_id": worker_id, "n_type": n_type, "description": description}
@@ -19,3 +21,21 @@ def get_notification(r: redis.Redis, worker_id: int) -> Dict:
     except TypeError:
         notification = b"{}"
     return json.loads(notification)
+
+
+def add_fake_names_to_buffer(r: redis.Redis) -> None:
+    fake_names = [
+        "Niels Bohr",
+        "Nicola Tesla",
+        "Isaac Newton",
+        "Albert Einstein",
+        "Max Planck",
+    ]
+    for name in fake_names:
+        r.lpush(f"fake_names", name)
+
+
+def get_fake_name_from_buffer(r: redis.Redis) -> str:
+    tasks.add_fake_name_to_buffer(r)
+    _, name = r.brpop(f"fake_names")
+    return name.decode("utf-8")
