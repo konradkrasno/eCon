@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from time import sleep
 from typing import *
 
-import redis
 import requests
 from flask_mail import Message
 
@@ -79,7 +78,7 @@ def get_fake_name() -> Union[str, None]:
 
 
 @celery.task
-def add_fake_name_to_buffer(r: redis.Redis) -> None:
+def add_fake_name_to_buffer() -> None:
     for i in range(3):
         name = get_fake_name()
         if name:

@@ -23,7 +23,7 @@ def get_notification(r: redis.Redis, worker_id: int) -> Dict:
     return json.loads(notification)
 
 
-def add_fake_names_to_buffer(r: redis.Redis) -> None:
+def populate_buffer(r: redis.Redis) -> None:
     fake_names = [
         "Niels Bohr",
         "Nicola Tesla",
@@ -36,6 +36,6 @@ def add_fake_names_to_buffer(r: redis.Redis) -> None:
 
 
 def get_fake_name_from_buffer(r: redis.Redis) -> str:
-    tasks.add_fake_name_to_buffer(r)
+    tasks.add_fake_name_to_buffer.delay()
     _, name = r.brpop(f"fake_names")
     return name.decode("utf-8")
