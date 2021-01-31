@@ -5,7 +5,12 @@ from app import db, r
 from app.main import bp
 from app.main.populate_db import populate_db
 from app.models import User, Worker
-from app.redis_client import get_notification
+from app.redis_client import get_notification, add_fake_names_to_buffer
+
+
+@bp.before_app_first_request
+def before_first_request():
+    add_fake_names_to_buffer(r)
 
 
 @bp.before_app_request

@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from time import sleep
 from typing import *
 
+import redis
+import requests
 from flask_mail import Message
 
 from app import mail, db, r
@@ -59,3 +61,29 @@ def delete_if_unused(username: str) -> None:
             db.session.commit()
         else:
             delete_if_unused.apply_async(args=(user.id,), countdown=600)
+
+
+def get_fake_name() -> Union[str, None]:
+    response = requests.post(
+        "https://random.api.randomkey.io/v1/name/full",
+        headers={
+            "auth": os.environ.get("RANDOMKEY_TOKEN"),
+            "Content-Type": "application/json",
+        },
+        json={"gender": "0", "region": "us", "records": 1},
+    )
+    if response.status_code == 200:
+        name = response.json().get("name", None)
+        if name:
+            return name
+
+
+@celery.task
+def add_fake_name_to_buffer(r: redis.Redis) -> None:
+    for i in range(3):
+        name = get_fake_name()
+        if name:
+            r.lpush(f"fake_names", name)
+            break
+    else:   # no break
+        r.lpush(f"fake_names", f"Guest ({datetime.utcnow().isoformat()})")
