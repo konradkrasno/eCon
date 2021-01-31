@@ -10,6 +10,8 @@ from app.redis_client import create_notification, add_notification, get_fake_nam
 
 def get_or_create_user(username: str, guest: bool = False) -> User:
     user = User.query.filter_by(username=username).first()
+    if user and guest:
+        raise IntegrityError
     if not user:
         user = User(
             username=username,
