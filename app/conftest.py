@@ -7,8 +7,9 @@ import pytest
 from flask import template_rendered
 from flask_login import AnonymousUserMixin
 
-from app import create_app, db, login, r
+from app import create_app, db, login, r, mongo
 from app.models import Wall, User, Investment, Worker, Task
+from app.production.custom_registry.registry import Registry
 from config import config, BASE_DIR
 
 contexts_required = pytest.mark.skipif(
@@ -35,6 +36,7 @@ def app_and_db():
     config["WTF_CSRF_ENABLED"] = False
     config["MAIL_SERVER"] = "localhost"
     config["MAIL_PORT"] = 8025
+    config["MONGO_URI"] = os.environ.get("TEST_MONGO_URI")
     app = create_app(config)
     ctx = app.test_request_context()
     ctx.push()
@@ -202,3 +204,44 @@ def test_with_anonymous_user():
     @login.request_loader
     def load_user_from_request(request):
         return AnonymousUserMixin()
+
+
+@pytest.fixture
+def test_mongo(app_and_db):
+    yield mongo.db
+    mongo.cx.drop_database("test")
+
+
+@pytest.fixture
+def add_registries(test_mongo):
+    items = [
+        {
+            "element": "B2",
+            "material": "wood",
+            "quantity": 123,
+            "date": datetime.datetime.utcnow(),
+            "done": 60,
+            "left": 40,
+        },
+        {
+            "element": "C1",
+            "material": "steel",
+            "quantity": 2400,
+            "date": datetime.datetime.utcnow(),
+            "done": 0,
+            "left": 100,
+        },
+        {
+            "element": "A2",
+            "material": "concrete",
+            "quantity": 12.5,
+            "date": datetime.datetime.utcnow(),
+            "done": 100,
+            "left": 0,
+        },
+    ]
+    registry1 = Registry(1, "test_user", "construction")
+    [registry1.add_item(item) for item in items]
+    registry2 = Registry(1, "test_user_2", "finishing")
+    [registry2.add_item(item) for item in items]
+    yield registry1, registry2

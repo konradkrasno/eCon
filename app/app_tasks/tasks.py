@@ -84,5 +84,5 @@ def add_fake_name_to_buffer() -> None:
         if name:
             r.lpush(f"fake_names", name)
             break
-    else:   # no break
+    else:  # no break
         r.lpush(f"fake_names", f"Guest ({datetime.utcnow().isoformat()})")

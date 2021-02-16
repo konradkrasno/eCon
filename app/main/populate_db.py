@@ -5,7 +5,11 @@ from sqlalchemy.exc import IntegrityError
 from app import db, r
 from app.app_tasks import tasks
 from app.models import User, Investment, Worker, Task
-from app.redis_client import create_notification, add_notification, get_fake_name_from_buffer
+from app.redis_client import (
+    create_notification,
+    add_notification,
+    get_fake_name_from_buffer,
+)
 
 
 def get_or_create_user(username: str, guest: bool = False) -> User:
