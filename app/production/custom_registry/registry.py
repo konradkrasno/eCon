@@ -2,7 +2,7 @@ from typing import *
 
 from pymongo.collection import Collection, ObjectId
 from pymongo.cursor import Cursor
-from wtforms import StringField, IntegerField, FloatField, BooleanField, DateTimeField, SubmitField
+from wtforms import StringField, IntegerField, FloatField, BooleanField, SubmitField
 
 from app import mongo
 
@@ -39,6 +39,9 @@ class RegistryStore:
                 }
             )
 
+    def delete_registry_from_store(self, registry_name: str) -> None:
+        self.investments.delete_one({"invest_id": self.invest_id, "registry_name": registry_name})
+
     @classmethod
     def get_user_registries(cls, invest_id: int, username: str) -> List[str]:
         registries = mongo.db.investments.find({"invest_id": invest_id, "users": {"$in": [username]}})
@@ -67,7 +70,6 @@ class Registry(RegistryStore):
             "integer": IntegerField,
             "float": FloatField,
             "bool": BooleanField,
-            "date": DateTimeField,
         }
 
     def get_schema(self) -> List:
@@ -110,13 +112,13 @@ class Registry(RegistryStore):
         """ Ads new item to registry. """
         self.registry.insert_one(self.validate_data(data))
 
-    def edit_item(self, _id: ObjectId, data: Dict) -> None:
+    def edit_item(self, _id: str, data: Dict) -> None:
         """ Edits item in registry. """
         query = {"_id": ObjectId(_id)}
         set_item = {"$set": self.validate_data(data)}
         self.registry.update_one(query, set_item)
 
-    def delete_item(self, _id: ObjectId) -> None:
+    def delete_item(self, _id: str) -> None:
         """ Deletes item from registry. """
         self.registry.delete_one({"_id": ObjectId(_id)})
 
@@ -128,3 +130,8 @@ class Registry(RegistryStore):
         query = {"invest_id": self.invest_id, "registry_name": self.registry_name}
         push_username = {"$push": {"users": username}}
         self.investments.update_one(query, push_username)
+
+    def delete_registry(self):
+        """ Deletes registry collection from the database. """
+        self.delete_registry_from_store(self.registry_name)
+        self.registry.drop()

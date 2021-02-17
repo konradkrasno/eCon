@@ -48,10 +48,8 @@ def add_column():
 def registry():
     registry_name = request.args.get("registry_name")
     reg = Registry(g.current_invest.id, current_user.username, registry_name)
-    field_names = reg.get_fields()
-    items = reg.get_items()
     return render_template(
-        "production/custom_registry/registry.html", title=registry_name, field_names=field_names, items=items
+        "production/custom_registry/registry.html", title=registry_name, registry=reg,
     )
 
 
@@ -94,3 +92,12 @@ def delete_item():
     reg = Registry(g.current_invest.id, current_user.username, registry_name)
     reg.delete_item(_id)
     return redirect(url_for("custom_registry.registry", registry_name=registry_name))
+
+
+@bp.route("/delete_registry", methods=["GET", "POST"])
+@login_required
+def delete_registry():
+    registry_name = request.args.get("registry_name")
+    reg = Registry(g.current_invest.id, current_user.username, registry_name)
+    reg.delete_registry()
+    return redirect(url_for("custom_registry.start"))

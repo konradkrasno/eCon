@@ -43,6 +43,9 @@
                           <button type="button" class="btn btn-sm btn-outline-secondary">
                               <a href="{{ url_for('custom_registry.add_column', registry_name=registry) }}">Add New Column</a>
                           </button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary">
+                              <a href="{{ url_for('custom_registry.delete_registry', registry_name=registry) }}">Delete Registry</a>
+                          </button>
                       </div>
                   </div>
 			  </td>
