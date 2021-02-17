@@ -28,10 +28,12 @@ class TaskForm(FlaskForm):
 
 
 class ProgressForm(FlaskForm):
-    progress = IntegerField("Progress", validators=[DataRequired()])
+    progress = IntegerField("Progress")
     submit = SubmitField("Submit")
 
     def validate_progress(self, progress):
+        if not isinstance(progress.data, int):
+            progress.data = 0
         if progress.data < 0:
             raise ValidationError("Progress value can not be negative!")
         if progress.data > 100:
