@@ -1,10 +1,10 @@
-from flask import render_template, redirect, url_for, request, g, flash
+from flask import render_template, redirect, url_for, request, g
 from flask_login import login_required, current_user
+from flask_wtf import FlaskForm
 
 from app.production.custom_registry import bp
 from app.production.custom_registry.forms import CreateTableForm, AddColumnForm
 from app.production.custom_registry.registry import RegistryStore, Registry
-from flask_wtf import FlaskForm
 
 
 @bp.route("/")
@@ -43,22 +43,6 @@ def add_column():
     )
 
 
-@bp.route("/add_data", methods=["GET", "POST"])
-@login_required
-def add_data():
-    registry_name = request.args.get("registry_name")
-    reg = Registry(g.current_invest.id, current_user.username, registry_name)
-    form_fields = reg.get_form_fields()
-    AddDataForm = type("AddDataForm", (FlaskForm,), form_fields)
-    form = AddDataForm()
-    if form.validate_on_submit():
-        reg.add_item(form.data)
-        return redirect(url_for("custom_registry.registry", registry_name=registry_name))
-    return render_template(
-        "production/custom_registry/form.html", title="Add Data", form=form
-    )
-
-
 @bp.route("/registry", methods=["GET", "POST"])
 @login_required
 def registry():
@@ -69,3 +53,44 @@ def registry():
     return render_template(
         "production/custom_registry/registry.html", title=registry_name, field_names=field_names, items=items
     )
+
+
+@bp.route("/add_data", methods=["GET", "POST"])
+@login_required
+def add_data():
+    registry_name = request.args.get("registry_name")
+    reg = Registry(g.current_invest.id, current_user.username, registry_name)
+    ItemForm = type("ItemForm", (FlaskForm,), reg.get_form_fields())
+    form = ItemForm()
+    if form.validate_on_submit():
+        reg.add_item(form.data)
+        return redirect(url_for("custom_registry.registry", registry_name=registry_name))
+    return render_template(
+        "production/custom_registry/form.html", title="Add Data", form=form
+    )
+
+
+@bp.route("/edit_item", methods=["GET", "POST"])
+@login_required
+def edit_item():
+    _id = request.args.get("_id")
+    registry_name = request.args.get("registry_name")
+    reg = Registry(g.current_invest.id, current_user.username, registry_name)
+    ItemForm = type("ItemForm", (FlaskForm,), reg.get_form_fields())
+    form = ItemForm()
+    if form.validate_on_submit():
+        reg.edit_item(_id, form.data)
+        return redirect(url_for("custom_registry.registry", registry_name=registry_name))
+    return render_template(
+        "production/custom_registry/form.html", title="Add Data", form=form
+    )
+
+
+@bp.route("/delete_item", methods=["GET", "POST"])
+@login_required
+def delete_item():
+    _id = request.args.get("_id")
+    registry_name = request.args.get("registry_name")
+    reg = Registry(g.current_invest.id, current_user.username, registry_name)
+    reg.delete_item(_id)
+    return redirect(url_for("custom_registry.registry", registry_name=registry_name))

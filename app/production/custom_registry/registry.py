@@ -1,6 +1,6 @@
 from typing import *
 
-from pymongo.collection import Collection
+from pymongo.collection import Collection, ObjectId
 from pymongo.cursor import Cursor
 from wtforms import StringField, IntegerField, FloatField, BooleanField, DateTimeField, SubmitField
 
@@ -84,8 +84,8 @@ class Registry(RegistryStore):
             "options": options,
         }
         query = {"invest_id": self.invest_id, "registry_name": self.registry_name}
-        push_username = {"$push": {"schema": field}}
-        self.investments.update_one(query, push_username)
+        push_field = {"$push": {"schema": field}}
+        self.investments.update_one(query, push_field)
 
     def get_fields(self) -> List[str]:
         return [field["name"] for field in self.get_schema()]
@@ -110,9 +110,19 @@ class Registry(RegistryStore):
         """ Ads new item to registry. """
         self.registry.insert_one(self.validate_data(data))
 
+    def edit_item(self, _id: ObjectId, data: Dict) -> None:
+        """ Edits item in registry. """
+        query = {"_id": ObjectId(_id)}
+        set_item = {"$set": self.validate_data(data)}
+        self.registry.update_one(query, set_item)
+
+    def delete_item(self, _id: ObjectId) -> None:
+        """ Deletes item from registry. """
+        self.registry.delete_one({"_id": ObjectId(_id)})
+
     def get_items(self) -> Cursor:
         """ Gets all items from registry. """
-        return self.registry.find({}, {"_id": 0})
+        return self.registry.find({})
 
     def add_user_to_registry(self, username: str) -> None:
         query = {"invest_id": self.invest_id, "registry_name": self.registry_name}

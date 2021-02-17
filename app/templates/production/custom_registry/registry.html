@@ -50,10 +50,10 @@
                   <div class="btn-toolbar mb-2 mb-md-0">
                       <div class="btn-group mr-1">
                           <button type="button" class="btn btn-sm btn-outline-secondary">
-                              <a href="#">Modify</a>
+                              <a href="{{ url_for('custom_registry.edit_item', _id=item._id, registry_name=title) }}">Edit</a>
                           </button>
                           <button type="button" class="btn btn-sm btn-outline-secondary">
-                            <a href="#">Delete</a>
+                            <a href="{{ url_for('custom_registry.delete_item', _id=item._id, registry_name=title) }}">Delete</a>
                           </button>
                       </div>
                   </div>
