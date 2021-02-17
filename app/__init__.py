@@ -1,13 +1,12 @@
-import os
-import redis
-
 from flask import Flask
-from config import config
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_redis import FlaskRedis
+from flask_sqlalchemy import SQLAlchemy
+
+from config import config
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -16,8 +15,7 @@ login.login_view = "auth.login"
 login.login_message = "Please log in to access this page."
 mail = Mail()
 bootstrap = Bootstrap()
-
-r = redis.from_url(url=os.environ.get("REDIS_URL"), db=1)
+r = FlaskRedis()
 
 
 def create_app(app_config=config) -> Flask:
@@ -31,6 +29,7 @@ def create_app(app_config=config) -> Flask:
     login.init_app(app)
     mail.init_app(app)
     bootstrap.init_app(app)
+    r.init_app(app)
 
     from app.auth import bp as auth_bp
 
