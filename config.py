@@ -25,4 +25,6 @@ config = {
     # Celery settings
     "broker_url": os.environ.get("REDIS_URL"),
     "result_backend": os.environ.get("REDIS_URL"),
+    # Redis settings
+    "REDIS_URL": os.environ.get("REDIS_URL")
 }
