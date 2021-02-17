@@ -8,3 +8,6 @@ migrations
 app/static/files
 .env
 todo.txt
+screenshots
+.coverage
+htmlcov
