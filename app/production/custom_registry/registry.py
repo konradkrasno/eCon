@@ -26,7 +26,9 @@ class RegistryStore:
         if isinstance(registry, dict):
             if self.username in registry.get("users", None):
                 return registry
-            raise ValueError("Registry with this name already exists. Use different name.")
+            raise ValueError(
+                "Registry with this name already exists. Use different name."
+            )
 
     def add_registry_to_store(self, registry_name: str) -> None:
         if registry_name and not self.get_registry(registry_name):
@@ -40,12 +42,31 @@ class RegistryStore:
             )
 
     def delete_registry_from_store(self, registry_name: str) -> None:
-        self.investments.delete_one({"invest_id": self.invest_id, "registry_name": registry_name})
+        self.investments.delete_one(
+            {"invest_id": self.invest_id, "registry_name": registry_name}
+        )
 
     @classmethod
     def get_user_registries(cls, invest_id: int, username: str) -> List[str]:
-        registries = mongo.db.investments.find({"invest_id": invest_id, "users": {"$in": [username]}})
+        registries = mongo.db.investments.find(
+            {"invest_id": invest_id, "users": {"$in": [username]}}
+        )
         return [item.get("registry_name") for item in registries]
+
+
+class Function:
+    """ Handles adding functions to registry fields. """
+
+    @staticmethod
+    def operators() -> List:
+        return ["+", "-", "*", "/", "%"]
+
+    @staticmethod
+    def calculate(
+        first_value: str, second_value: str, operator: str
+    ) -> Union[float, int]:
+        expression = "{}{}{}".format(first_value, operator, second_value)
+        return eval(expression)
 
 
 class Registry(RegistryStore):
@@ -80,17 +101,23 @@ class Registry(RegistryStore):
 
     def add_field(self, name: str, data_type: str, **options) -> None:
         """ Adds new field to registry schema. """
-        field = {
-            "name": name,
-            "data_type": data_type,
-            "options": options,
-        }
-        query = {"invest_id": self.invest_id, "registry_name": self.registry_name}
-        push_field = {"$push": {"schema": field}}
-        self.investments.update_one(query, push_field)
+        if name not in self.get_fields():
+            field = {
+                "name": name,
+                "data_type": data_type,
+                "options": options,
+            }
+            query = {"invest_id": self.invest_id, "registry_name": self.registry_name}
+            push_field = {"$push": {"schema": field}}
+            self.investments.update_one(query, push_field)
 
-    def get_fields(self) -> List[str]:
-        return [field["name"] for field in self.get_schema()]
+    def get_fields(self, numeric_fields: bool = False) -> List[str]:
+        result = []
+        for field in self.get_schema():
+            if numeric_fields and field["data_type"] not in ["integer", "float"]:
+                continue
+            result.append(field["name"])
+        return result
 
     def get_form_fields(self) -> Dict:
         form_fields = {}
@@ -135,3 +162,24 @@ class Registry(RegistryStore):
         """ Deletes registry collection from the database. """
         self.delete_registry_from_store(self.registry_name)
         self.registry.drop()
+
+    def add_function_field(
+        self,
+        first_field: str,
+        second_field: str,
+        operator: str,
+        function_field_name: str,
+    ) -> None:
+        self.add_field(name=function_field_name, data_type="float")
+        for item in self.get_items():
+            try:
+                value = Function.calculate(
+                    item.get(first_field), item.get(second_field), operator
+                )
+            except Exception as e:
+                print(e)
+                value = "error"
+            self.registry.update_one(
+                {"_id": ObjectId(item.get("_id"))},
+                {"$set": {function_field_name: value}},
+            )
